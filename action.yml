@@ -1,5 +1,5 @@
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/metadata-syntax-for-github-actions
-name: 'NPM install'
+name: 'NPM or Yarn install with caching'
 description: 'Install npm dependencies with caching'
 author: 'Gleb Bahmutov'
 runs:
