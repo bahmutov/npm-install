@@ -1,0 +1,10 @@
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/metadata-syntax-for-github-actions
+name: 'npm-install'
+description: 'Install npm dependencies with caching'
+author: 'Gleb Bahmutov'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
+branding:
+  color: 'yellow'
+  icon: 'command'

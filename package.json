@@ -1,0 +1,50 @@
+{
+  "name": "npm-install",
+  "version": "1.0.0",
+  "description": "GitHub Action for install npm dependencies with caching without any configuration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Write tests\"",
+    "build": "ncc build -o dist index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bahmutov/npm-install.git"
+  },
+  "keywords": [
+    "github",
+    "action",
+    "github-action",
+    "npm",
+    "install"
+  ],
+  "author": "Gleb Bahmutov <gleb.bahmutov@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bahmutov/npm-install/issues"
+  },
+  "homepage": "https://github.com/bahmutov/npm-install#readme",
+  "dependencies": {
+    "@actions/core": "1.2.0",
+    "@actions/exec": "1.0.1",
+    "@actions/io": "1.0.1",
+    "cache": "github:cypress-io/github-actions-cache#8bec6cc",
+    "hasha": "5.1.0",
+    "quote": "0.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.4",
+    "@zeit/ncc": "0.20.5",
+    "husky": "3.0.9",
+    "prettier": "1.19.1"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run build"
+    }
+  }
+}
