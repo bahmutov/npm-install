@@ -14,10 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and test
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v1
       - uses: bahmutov/npm-install@v1
-      - run: npm test
+      - run: npm t
 ```
 
 ### Small print
