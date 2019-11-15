@@ -66,8 +66,8 @@ const install = () => {
   }
 }
 
-restoreCachedNpm()
-  .then(npmCacheHit => {
+const npmInstallAction = () => {
+  return restoreCachedNpm().then(npmCacheHit => {
     console.log('npm cache hit', npmCacheHit)
 
     return install().then(() => {
@@ -78,10 +78,20 @@ restoreCachedNpm()
       return saveCachedNpm()
     })
   })
-  .then(() => {
-    console.log('all done, exiting')
-  })
-  .catch(error => {
-    console.log(error)
-    core.setFailed(error.message)
-  })
+}
+
+module.exports = {
+  npmInstallAction
+}
+
+if (!module.parent) {
+  console.log('running npm-install GitHub Action')
+  npmInstallAction()
+    .then(() => {
+      console.log('all done, exiting')
+    })
+    .catch(error => {
+      console.log(error)
+      core.setFailed(error.message)
+    })
+}

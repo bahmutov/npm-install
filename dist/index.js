@@ -36,6 +36,8 @@ module.exports =
 /******/ 		// Load entry module and return exports
 /******/ 		return __webpack_require__(104);
 /******/ 	};
+/******/ 	// initialize runtime
+/******/ 	runtime(__webpack_require__);
 /******/
 /******/ 	// run startup
 /******/ 	return startup();
@@ -975,8 +977,9 @@ module.exports = require("os");
 /***/ }),
 
 /***/ 104:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
+/* module decorator */ module = __webpack_require__.nmd(module);
 // @ts-check
 const core = __webpack_require__(470)
 const exec = __webpack_require__(986)
@@ -1045,8 +1048,8 @@ const install = () => {
   }
 }
 
-restoreCachedNpm()
-  .then(npmCacheHit => {
+const npmInstallAction = () => {
+  return restoreCachedNpm().then(npmCacheHit => {
     console.log('npm cache hit', npmCacheHit)
 
     return install().then(() => {
@@ -1057,13 +1060,23 @@ restoreCachedNpm()
       return saveCachedNpm()
     })
   })
-  .then(() => {
-    console.log('all done, exiting')
-  })
-  .catch(error => {
-    console.log(error)
-    core.setFailed(error.message)
-  })
+}
+
+module.exports = {
+  npmInstallAction
+}
+
+if (!module.parent) {
+  console.log('running npm-install GitHub Action')
+  npmInstallAction()
+    .then(() => {
+      console.log('all done, exiting')
+    })
+    .catch(error => {
+      console.log(error)
+      core.setFailed(error.message)
+    })
+}
 
 
 /***/ }),
@@ -5602,4 +5615,26 @@ exports.exec = exec;
 
 /***/ })
 
-/******/ });
+/******/ },
+/******/ function(__webpack_require__) { // webpackRuntimeModules
+/******/ 	"use strict";
+/******/ 
+/******/ 	/* webpack/runtime/node module decorator */
+/******/ 	!function() {
+/******/ 		__webpack_require__.nmd = function(module) {
+/******/ 			module.paths = [];
+/******/ 			if (!module.children) module.children = [];
+/******/ 			Object.defineProperty(module, 'loaded', {
+/******/ 				enumerable: true,
+/******/ 				get: function() { return module.l; }
+/******/ 			});
+/******/ 			Object.defineProperty(module, 'id', {
+/******/ 				enumerable: true,
+/******/ 				get: function() { return module.i; }
+/******/ 			});
+/******/ 			return module;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ }
+);

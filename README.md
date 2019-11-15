@@ -19,6 +19,15 @@ jobs:
       - run: npm t
 ```
 
+## NPM
+
+If you are writing your own GitHub Action and would like to use this action as a utility function, import it and run it.
+
+```js
+const { npmInstallAction } = require('npm-install')
+await npmInstallAction()
+```
+
 ### Small print
 
 Author: Gleb Bahmutov &lt;gleb.bahmutov@gmail.com&gt; &copy; 2019
