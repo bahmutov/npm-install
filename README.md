@@ -28,6 +28,10 @@ const { npmInstallAction } = require('npm-install')
 await npmInstallAction()
 ```
 
+## Links
+
+- [Trying GitHub Actions](https://glebbahmutov.com/blog/trying-github-actions/) blog post
+
 ### Small print
 
 Author: Gleb Bahmutov &lt;gleb.bahmutov@gmail.com&gt; &copy; 2019
