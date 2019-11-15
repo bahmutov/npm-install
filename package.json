@@ -1,15 +1,16 @@
 {
   "name": "npm-install",
-  "version": "1.0.0",
+  "version": "0.0.0-development",
   "description": "GitHub Action for install npm dependencies with caching without any configuration",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Write tests\"",
-    "build": "ncc build -o dist index.js"
+    "build": "ncc build -o dist index.js",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bahmutov/npm-install.git"
+    "url": "https://github.com/bahmutov/npm-install.git"
   },
   "keywords": [
     "github",
@@ -36,7 +37,8 @@
     "@types/node": "^12.0.4",
     "@zeit/ncc": "0.20.5",
     "husky": "3.0.9",
-    "prettier": "1.19.1"
+    "prettier": "1.19.1",
+    "semantic-release": "^15.13.30"
   },
   "private": false,
   "publishConfig": {
