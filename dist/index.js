@@ -985,7 +985,10 @@ const core = __webpack_require__(470)
 const exec = __webpack_require__(986)
 const io = __webpack_require__(1)
 const hasha = __webpack_require__(309)
-const { restoreCache, saveCache } = __webpack_require__(211)
+const {
+  restoreCache,
+  saveCache
+} = __webpack_require__(211)
 const fs = __webpack_require__(747)
 const os = __webpack_require__(87)
 const path = __webpack_require__(622)
@@ -993,8 +996,20 @@ const quote = __webpack_require__(531)
 
 const homeDirectory = os.homedir()
 
-const useYarn = fs.existsSync('yarn.lock')
-const lockFilename = useYarn ? 'yarn.lock' : 'package-lock.json'
+const workingDirectory =
+  core.getInput('working-directory') || process.cwd()
+const yarnFilename = path.join(
+  workingDirectory,
+  'yarn.lock'
+)
+const packageLockFilename = path.join(
+  workingDirectory,
+  'package-lock.json'
+)
+const useYarn = fs.existsSync(yarnFilename)
+const lockFilename = useYarn
+  ? yarnFilename
+  : packageLockFilename
 const lockHash = hasha.fromFileSync(lockFilename)
 const platformAndArch = `${process.platform}-${process.arch}`
 
@@ -1004,12 +1019,11 @@ const NPM_CACHE = (() => {
   const o = {}
   if (useYarn) {
     o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
-    o.restoreKeys = `yarn-${platformAndArch}-`
+    o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
   } else {
     o.inputPath = NPM_CACHE_FOLDER
-    o.restoreKeys = `npm-${platformAndArch}-`
+    o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
   }
-  o.primaryKey = o.restoreKeys + lockHash
   return o
 })()
 
@@ -1024,26 +1038,40 @@ const restoreCachedNpm = () => {
 
 const saveCachedNpm = () => {
   console.log('saving NPM modules')
-  return saveCache(NPM_CACHE.inputPath, NPM_CACHE.primaryKey)
+  return saveCache(
+    NPM_CACHE.inputPath,
+    NPM_CACHE.primaryKey
+  )
 }
 
 const install = () => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
 
+  const options = {
+    cwd: workingDirectory
+  }
+
   if (useYarn) {
     console.log('installing NPM dependencies using Yarn')
     return io.which('yarn', true).then(yarnPath => {
       console.log('yarn at "%s"', yarnPath)
-      return exec.exec(quote(yarnPath), ['--frozen-lockfile'])
+      return exec.exec(
+        quote(yarnPath),
+        ['--frozen-lockfile'],
+        options
+      )
     })
   } else {
     console.log('installing NPM dependencies')
-    core.exportVariable('npm_config_cache', NPM_CACHE_FOLDER)
+    core.exportVariable(
+      'npm_config_cache',
+      NPM_CACHE_FOLDER
+    )
 
     return io.which('npm', true).then(npmPath => {
       console.log('npm at "%s"', npmPath)
-      return exec.exec(quote(npmPath), ['ci'])
+      return exec.exec(quote(npmPath), ['ci'], options)
     })
   }
 }
