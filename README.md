@@ -2,7 +2,11 @@
 
 > GitHub Action for install npm dependencies with caching without any configuration
 
-See [bahmutov/npm-install-action-example](https://github.com/bahmutov/npm-install-action-example).
+## Examples
+
+### Basic
+
+This example should cover 95% of use cases.
 
 If you use `npm ci` or `yarn --frozen-lockfile` on CI to install NPM dependencies - this Action is for you. Simply use it, and your NPM modules will be installed and the folder `~/.npm` or `~/.cache/yarn` will be cached. Typical use:
 
@@ -18,6 +22,48 @@ jobs:
       - uses: bahmutov/npm-install@v1
       - run: npm t
 ```
+
+See [bahmutov/npm-install-action-example](https://github.com/bahmutov/npm-install-action-example).
+
+### Subfolders
+
+If your repository contains packages in separate folders, install each one separately
+
+```text
+repo/
+  app1/
+    package-lock.json
+  app2/
+    yarn.json
+```
+
+```yml
+name: main
+on: [push]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Build and test
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: bahmutov/npm-install@v1
+        with:
+          working-directory: app1
+      - uses: bahmutov/npm-install@v1
+        with:
+          working-directory: app2
+
+      - name: App1 tests
+        run: npm t
+        working-directory: app1
+      - name: Run app2
+        run: node .
+        working-directory: app2
+```
+
+See [npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example).
 
 ## NPM
 
