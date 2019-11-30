@@ -37,12 +37,11 @@ const NPM_CACHE = (() => {
   const o = {}
   if (useYarn) {
     o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
-    o.restoreKeys = `yarn-${platformAndArch}-`
+    o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
   } else {
     o.inputPath = NPM_CACHE_FOLDER
-    o.restoreKeys = `npm-${platformAndArch}-`
+    o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
   }
-  o.primaryKey = o.restoreKeys + lockHash
   return o
 })()
 
@@ -67,13 +66,19 @@ const install = () => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
 
+  const options = {
+    cwd: workingDirectory
+  }
+
   if (useYarn) {
     console.log('installing NPM dependencies using Yarn')
     return io.which('yarn', true).then(yarnPath => {
       console.log('yarn at "%s"', yarnPath)
-      return exec.exec(quote(yarnPath), [
-        '--frozen-lockfile'
-      ])
+      return exec.exec(
+        quote(yarnPath),
+        ['--frozen-lockfile'],
+        options
+      )
     })
   } else {
     console.log('installing NPM dependencies')
@@ -84,7 +89,7 @@ const install = () => {
 
     return io.which('npm', true).then(npmPath => {
       console.log('npm at "%s"', npmPath)
-      return exec.exec(quote(npmPath), ['ci'])
+      return exec.exec(quote(npmPath), ['ci'], options)
     })
   }
 }
