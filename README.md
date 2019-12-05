@@ -74,6 +74,15 @@ const { npmInstallAction } = require('npm-install')
 await npmInstallAction()
 ```
 
+## Debugging
+
+You can see verbose messages from GitHub Actions by setting the following secrets (from [Debugging Actions Guide](https://github.com/actions/toolkit/blob/master/docs/action-debugging.md#step-debug-logs))
+
+```
+ACTIONS_RUNNER_DEBUG: true
+ACTIONS_STEP_DEBUG: true
+```
+
 ## Links
 
 - [Trying GitHub Actions](https://glebbahmutov.com/blog/trying-github-actions/) blog post

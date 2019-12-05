@@ -33,9 +33,11 @@ const getInputBool = (name, defaultValue = false) => {
 }
 
 const usePackageLock = getInputBool('useLockFile', true)
+core.debug(`usePackageLock? ${usePackageLock}`)
 
 const workingDirectory =
   core.getInput('working-directory') || process.cwd()
+core.debug(`working directory ${workingDirectory}`)
 
 const yarnFilename = path.join(
   workingDirectory,
@@ -64,6 +66,9 @@ const getLockFilename = () => {
 const lockFilename = getLockFilename()
 const lockHash = hasha.fromFileSync(lockFilename)
 const platformAndArch = `${process.platform}-${process.arch}`
+core.debug(`lock filename ${lockFilename}`)
+core.debug(`file hash ${lockHash}`)
+core.debug(`platform and arch ${platformAndArch}`)
 
 // enforce the same NPM cache folder across different operating systems
 const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
@@ -112,6 +117,7 @@ const install = () => {
       const args = usePackageLock
         ? ['--frozen-lockfile']
         : []
+      core.debug(`yarn command: ${yarnPath} ${args}`)
       return exec.exec(quote(yarnPath), args, options)
     })
   } else {
@@ -125,6 +131,7 @@ const install = () => {
       console.log('npm at "%s"', npmPath)
 
       const args = usePackageLock ? ['ci'] : ['install']
+      core.debug(`npm command: ${npmPath} ${args}`)
       return exec.exec(quote(npmPath), args, options)
     })
   }
