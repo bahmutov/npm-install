@@ -65,6 +65,16 @@ jobs:
 
 See [npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example).
 
+### Use lock file
+
+By default, this action will use a lock file like `package-lock.json` or `yarn.lock`. You can set `useLockFile: false` to use just `package.json` which might be better for [building libraries](https://twitter.com/mikeal/status/1202298796274700288).
+
+```yml
+- uses: bahmutov/npm-install@v1
+  with:
+    useLockFile: false
+```
+
 ## NPM
 
 If you are writing your own GitHub Action and would like to use this action as a utility function, import it and run it.
