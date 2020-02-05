@@ -1017,56 +1017,67 @@ const getInputBool = (name, defaultValue = false) => {
 const usePackageLock = getInputBool('useLockFile', true)
 core.debug(`usePackageLock? ${usePackageLock}`)
 
-const workingDirectory =
+let wdInput =
   core.getInput('working-directory') || process.cwd()
-core.debug(`working directory ${workingDirectory}`)
 
-const yarnFilename = path.join(
-  workingDirectory,
-  'yarn.lock'
-)
-const packageFilename = path.join(
-  workingDirectory,
-  'package.json'
-)
+// Split by new line and remove empty entries
+const workingDirectories = wdInput.split('\n').filter(dir => dir === '');
 
-const packageLockFilename = path.join(
-  workingDirectory,
-  'package-lock.json'
-)
+core.debug(`working directory ${workingDirectories}`)
 
-const useYarn = fs.existsSync(yarnFilename)
+const getNpmCacheDetails = (workingDirectory) => {
+  const yarnFilename = path.join(
+    workingDirectory,
+    'yarn.lock'
+  )
+  const packageFilename = path.join(
+    workingDirectory,
+    'package.json'
+  )
 
-const getLockFilename = () => {
-  if (!usePackageLock) {
-    return packageFilename
+  const packageLockFilename = path.join(
+    workingDirectory,
+    'package-lock.json'
+  )
+
+  const useYarn = fs.existsSync(yarnFilename)
+
+  const getLockFilename = () => {
+    if (!usePackageLock) {
+      return packageFilename
+    }
+
+    return useYarn ? yarnFilename : packageLockFilename
   }
 
-  return useYarn ? yarnFilename : packageLockFilename
+  const lockFilename = getLockFilename()
+  const lockHash = hasha.fromFileSync(lockFilename)
+
+  core.debug(`lock filename ${lockFilename} (for working directory ${workingDirectory})`)
+  core.debug(`file hash ${lockHash} (for working directory ${workingDirectory})`)
+
+  const cacheDetails = {}
+
+  cacheDetails.useYarn = useYarn
+
+  if (useYarn) {
+    cacheDetails.inputPath = path.join(homeDirectory, '.cache', 'yarn')
+    cacheDetails.primaryKey = cacheDetails.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
+  } else {
+    cacheDetails.inputPath = NPM_CACHE_FOLDER
+    cacheDetails.primaryKey = cacheDetails.restoreKeys = `npm-${platformAndArch}-${lockHash}`
+  }
+
+  return cacheDetails
 }
 
-const lockFilename = getLockFilename()
-const lockHash = hasha.fromFileSync(lockFilename)
 const platformAndArch = `${process.platform}-${process.arch}`
-core.debug(`lock filename ${lockFilename}`)
-core.debug(`file hash ${lockHash}`)
 core.debug(`platform and arch ${platformAndArch}`)
 
 // enforce the same NPM cache folder across different operating systems
 const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
-const NPM_CACHE = (() => {
-  const o = {}
-  if (useYarn) {
-    o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
-    o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
-  } else {
-    o.inputPath = NPM_CACHE_FOLDER
-    o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
-  }
-  return o
-})()
 
-const restoreCachedNpm = () => {
+const restoreCachedNpm = (NPM_CACHE) => {
   console.log('trying to restore cached NPM modules')
   return restoreCache(
     NPM_CACHE.inputPath,
@@ -1075,7 +1086,7 @@ const restoreCachedNpm = () => {
   )
 }
 
-const saveCachedNpm = () => {
+const saveCachedNpm = (NPM_CACHE) => {
   console.log('saving NPM modules')
   return saveCache(
     NPM_CACHE.inputPath,
@@ -1083,7 +1094,7 @@ const saveCachedNpm = () => {
   )
 }
 
-const install = () => {
+const install = (workingDirectory, useYarn) => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
 
@@ -1120,17 +1131,21 @@ const install = () => {
 }
 
 const npmInstallAction = () => {
-  return restoreCachedNpm().then(npmCacheHit => {
-    console.log('npm cache hit', npmCacheHit)
+  return Promise.all(workingDirectories.map(workingDirectory => {
+    const NPM_CACHE = getNpmCacheDetails(workingDirectory)
 
-    return install().then(() => {
-      if (npmCacheHit) {
-        return
-      }
+    return restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
+      console.log('npm cache hit', npmCacheHit)
 
-      return saveCachedNpm()
+      install(workingDirectory, NPM_CACHE.useYarn).then(() => {
+        if (npmCacheHit) {
+          return
+        }
+
+        return saveCachedNpm(NPM_CACHE)
+      })
     })
-  })
+  }))
 }
 
 module.exports = {
