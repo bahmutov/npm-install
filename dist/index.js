@@ -1023,7 +1023,7 @@ let wdInput =
 // Split by new line and remove empty entries
 const workingDirectories = wdInput.split('\n').filter(dir => dir === '');
 
-core.debug(`working directory ${workingDirectories}`)
+core.debug(`working directory ${JSON.stringify(workingDirectories)}`)
 
 const getNpmCacheDetails = (workingDirectory) => {
   const yarnFilename = path.join(
@@ -1134,10 +1134,12 @@ const npmInstallAction = () => {
   return Promise.all(workingDirectories.map(workingDirectory => {
     const NPM_CACHE = getNpmCacheDetails(workingDirectory)
 
+    core.debug(`handling working directory ${workingDirectory}`);
+
     return restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
       console.log('npm cache hit', npmCacheHit)
 
-      install(workingDirectory, NPM_CACHE.useYarn).then(() => {
+      return install(workingDirectory, NPM_CACHE.useYarn).then(() => {
         if (npmCacheHit) {
           return
         }
