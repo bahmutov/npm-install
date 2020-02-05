@@ -27,7 +27,9 @@ See [bahmutov/npm-install-action-example](https://github.com/bahmutov/npm-instal
 
 ### Subfolders
 
-If your repository contains packages in separate folders, install each one separately
+If your repository contains packages in multiple folders, put one on each line of the working-directory parameter.
+
+**Note:** `.` can be used if you also need to install modules in the current directory
 
 ```text
 repo/
@@ -50,10 +52,9 @@ jobs:
 
       - uses: bahmutov/npm-install@v1
         with:
-          working-directory: app1
-      - uses: bahmutov/npm-install@v1
-        with:
-          working-directory: app2
+          working-directory: |
+            app1
+            app2
 
       - name: App1 tests
         run: npm t
