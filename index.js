@@ -39,7 +39,7 @@ let wdInput =
   core.getInput('working-directory') || process.cwd()
 
 // Split by new line and remove empty entries
-const workingDirectories = wdInput.split('\n').filter(dir => dir === '');
+const workingDirectories = wdInput.split('\n').filter(dir => dir !== '');
 
 core.debug(`working directory ${JSON.stringify(workingDirectories)}`)
 
