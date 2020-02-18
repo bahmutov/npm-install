@@ -85,15 +85,20 @@ const saveCachedNpm = () => {
   return saveCache(NPM_CACHE.inputPath, NPM_CACHE.primaryKey)
 }
 
+const hasOption = (name, o) => name in o
+
+const getOption = (name, o, defaultValue) =>
+  hasOption(name, o) ? o[name] : defaultValue
+
 const install = (opts = {}) => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
 
-  const shouldUseYarn = opts.useYarn || useYarn
-  const shouldUsePackageLock = opts.usePackageLock || usePackageLock
+  const shouldUseYarn = getOption('useYarn', opts, useYarn)
+  const shouldUsePackageLock = getOption('usePackageLock', opts, usePackageLock)
 
   const options = {
-    cwd: opts.workingDirectory || workingDirectory
+    cwd: getOption('workingDirectory', opts, workingDirectory)
   }
 
   if (shouldUseYarn) {

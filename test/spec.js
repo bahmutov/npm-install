@@ -78,4 +78,23 @@ describe('install command', () => {
       { cwd: opts.workingDirectory }
     )
   })
+
+  it('installs using Yarn without lock file', async function() {
+    const pathToYarn = '/path/to/yarn'
+    const opts = {
+      useYarn: true,
+      usePackageLock: false,
+      workingDirectory: '/current/working/directory'
+    }
+    sandbox
+      .stub(io, 'which')
+      .withArgs('yarn')
+      .resolves(pathToYarn)
+    await npmInstall.utils.install(opts)
+    expect(this.exec).to.have.been.calledOnceWithExactly(
+      quote(pathToYarn),
+      [],
+      { cwd: opts.workingDirectory }
+    )
+  })
 })
