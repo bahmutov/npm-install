@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
         # can we use THIS action right away?!
-      - uses: bahmutov/npm-install@ ${{ github.sha }}
+      - uses: bahmutov/npm-install@$GITHUB_SHA
 
       # https://github.com/cycjimmy/semantic-release-action
       - name: Semantic Release
