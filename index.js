@@ -33,20 +33,9 @@ core.debug(`usePackageLock? ${usePackageLock}`)
 const workingDirectory = core.getInput('working-directory') || process.cwd()
 core.debug(`working directory ${workingDirectory}`)
 
-const yarnFilename = path.join(workingDirectory, 'yarn.lock')
 const packageFilename = path.join(workingDirectory, 'package.json')
 
 const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
-
-const useYarn = fs.existsSync(yarnFilename)
-
-const getLockFilename = () => {
-  if (!usePackageLock) {
-    return packageFilename
-  }
-
-  return useYarn ? yarnFilename : packageLockFilename
-}
 
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
@@ -71,7 +60,12 @@ const install = (opts = {}) => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
 
-  const shouldUseYarn = getOption('useYarn', opts, useYarn)
+  if (!hasOption('useYarn', opts)) {
+    console.error('passed options %o', opts)
+    throw new Error('Missing useYarn option')
+  }
+
+  const shouldUseYarn = opts.useYarn
   const shouldUsePackageLock = getOption('usePackageLock', opts, usePackageLock)
   const npmCacheFolder = opts.npmCacheFolder
   if (!npmCacheFolder) {
@@ -109,6 +103,17 @@ const install = (opts = {}) => {
 }
 
 const npmInstallAction = () => {
+  const yarnFilename = path.join(workingDirectory, 'yarn.lock')
+  const useYarn = fs.existsSync(yarnFilename)
+
+  const getLockFilename = () => {
+    if (!usePackageLock) {
+      return packageFilename
+    }
+
+    return useYarn ? yarnFilename : packageLockFilename
+  }
+
   const lockFilename = getLockFilename()
   const lockHash = hasha.fromFileSync(lockFilename)
   const platformAndArch = `${process.platform}-${process.arch}`
@@ -133,6 +138,7 @@ const npmInstallAction = () => {
   })()
 
   const opts = {
+    useYarn,
     npmCacheFolder: NPM_CACHE_FOLDER
   }
 
