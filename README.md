@@ -95,7 +95,9 @@ ACTIONS_STEP_DEBUG: true
 
 ## Testing
 
-Using Mocha and Sinon.js following the guide [How to set up Mocha with Sinon.js](https://glebbahmutov.com/blog/mocha-and-sinon/)
+Using Mocha and Sinon.js following the guide [How to set up Mocha with Sinon.js](https://glebbahmutov.com/blog/mocha-and-sinon/). You can find the tests in [test](test) folder. In general:
+
+- all environment inputs are done inside the action, so they can be stubbed and controlled during tests
 
 ## Links
 

@@ -985,13 +985,11 @@ const core = __webpack_require__(470)
 const exec = __webpack_require__(986)
 const io = __webpack_require__(1)
 const hasha = __webpack_require__(309)
-const { restoreCache, saveCache } = __webpack_require__(211)
+const cache = __webpack_require__(211)
 const fs = __webpack_require__(747)
 const os = __webpack_require__(87)
 const path = __webpack_require__(622)
 const quote = __webpack_require__(531)
-
-const homeDirectory = os.homedir()
 
 /**
  * Grabs a boolean GitHub Action parameter input and casts it.
@@ -1011,76 +1009,49 @@ const getInputBool = (name, defaultValue = false) => {
   return defaultValue
 }
 
-const usePackageLock = getInputBool('useLockFile', true)
-core.debug(`usePackageLock? ${usePackageLock}`)
-
-const workingDirectory = core.getInput('working-directory') || process.cwd()
-core.debug(`working directory ${workingDirectory}`)
-
-const yarnFilename = path.join(workingDirectory, 'yarn.lock')
-const packageFilename = path.join(workingDirectory, 'package.json')
-
-const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
-
-const useYarn = fs.existsSync(yarnFilename)
-
-const getLockFilename = () => {
-  if (!usePackageLock) {
-    return packageFilename
-  }
-
-  return useYarn ? yarnFilename : packageLockFilename
-}
-
-const lockFilename = getLockFilename()
-const lockHash = hasha.fromFileSync(lockFilename)
-const platformAndArch = `${process.platform}-${process.arch}`
-core.debug(`lock filename ${lockFilename}`)
-core.debug(`file hash ${lockHash}`)
-core.debug(`platform and arch ${platformAndArch}`)
-
-// enforce the same NPM cache folder across different operating systems
-const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
-const NPM_CACHE = (() => {
-  const o = {}
-  if (useYarn) {
-    o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
-    o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
-  } else {
-    o.inputPath = NPM_CACHE_FOLDER
-    o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
-  }
-  return o
-})()
-
-const restoreCachedNpm = () => {
+const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
-  return restoreCache(
-    NPM_CACHE.inputPath,
-    NPM_CACHE.primaryKey,
-    NPM_CACHE.restoreKeys
+  return cache.restoreCache(
+    npmCache.inputPath,
+    npmCache.primaryKey,
+    npmCache.restoreKeys
   )
 }
 
-const saveCachedNpm = () => {
+const saveCachedNpm = npmCache => {
   console.log('saving NPM modules')
-  return saveCache(NPM_CACHE.inputPath, NPM_CACHE.primaryKey)
+  return cache.saveCache(npmCache.inputPath, npmCache.primaryKey)
 }
 
 const hasOption = (name, o) => name in o
-
-const getOption = (name, o, defaultValue) =>
-  hasOption(name, o) ? o[name] : defaultValue
 
 const install = (opts = {}) => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
 
-  const shouldUseYarn = getOption('useYarn', opts, useYarn)
-  const shouldUsePackageLock = getOption('usePackageLock', opts, usePackageLock)
+  if (!hasOption('useYarn', opts)) {
+    console.error('passed options %o', opts)
+    throw new Error('Missing useYarn option')
+  }
+  if (!hasOption('usePackageLock', opts)) {
+    console.error('passed options %o', opts)
+    throw new Error('Missing usePackageLock option')
+  }
+  if (!hasOption('workingDirectory', opts)) {
+    console.error('passed options %o', opts)
+    throw new Error('Missing workingDirectory option')
+  }
+
+  const shouldUseYarn = opts.useYarn
+  const shouldUsePackageLock = opts.usePackageLock
+  const npmCacheFolder = opts.npmCacheFolder
+  if (!npmCacheFolder) {
+    console.error('passed opts %o', opts)
+    throw new Error('Missing npm cache folder to use')
+  }
 
   const options = {
-    cwd: getOption('workingDirectory', opts, workingDirectory)
+    cwd: opts.workingDirectory
   }
 
   if (shouldUseYarn) {
@@ -1096,7 +1067,7 @@ const install = (opts = {}) => {
     })
   } else {
     console.log('installing NPM dependencies')
-    core.exportVariable('npm_config_cache', NPM_CACHE_FOLDER)
+    core.exportVariable('npm_config_cache', npmCacheFolder)
 
     return io.which('npm', true).then(npmPath => {
       console.log('npm at "%s"', npmPath)
@@ -1108,16 +1079,82 @@ const install = (opts = {}) => {
   }
 }
 
+const getPlatformAndArch = () => `${process.platform}-${process.arch}`
+
 const npmInstallAction = () => {
-  return api.utils.restoreCachedNpm().then(npmCacheHit => {
+  const usePackageLock = getInputBool('useLockFile', true)
+  core.debug(`usePackageLock? ${usePackageLock}`)
+
+  const workingDirectory = core.getInput('working-directory') || process.cwd()
+  core.debug(`working directory ${workingDirectory}`)
+
+  const getLockFilename = () => {
+    const packageFilename = path.join(workingDirectory, 'package.json')
+
+    if (!usePackageLock) {
+      return {
+        useYarn: false,
+        lockFilename: packageFilename
+      }
+    }
+
+    const yarnFilename = path.join(workingDirectory, 'yarn.lock')
+    const useYarn = fs.existsSync(yarnFilename)
+    core.debug(`yarn lock file "${yarnFilename}" exists? ${useYarn}`)
+
+    const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
+
+    const result = {
+      useYarn,
+      lockFilename: useYarn ? yarnFilename : packageLockFilename
+    }
+    return result
+  }
+
+  const lockInfo = getLockFilename()
+  const lockHash = hasha.fromFileSync(lockInfo.lockFilename)
+  if (!lockHash) {
+    throw new Error(
+      `could not compute hash from file "${lockInfo.lockFilename}"`
+    )
+  }
+  const platformAndArch = api.utils.getPlatformAndArch()
+  core.debug(`lock filename ${lockInfo.lockFilename}`)
+  core.debug(`file hash ${lockHash}`)
+  core.debug(`platform and arch ${platformAndArch}`)
+
+  // enforce the same NPM cache folder across different operating systems
+  const homeDirectory = os.homedir()
+  const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
+
+  const NPM_CACHE = (() => {
+    const o = {}
+    if (lockInfo.useYarn) {
+      o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
+      o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
+    } else {
+      o.inputPath = NPM_CACHE_FOLDER
+      o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
+    }
+    return o
+  })()
+
+  const opts = {
+    useYarn: lockInfo.useYarn,
+    usePackageLock,
+    workingDirectory,
+    npmCacheFolder: NPM_CACHE_FOLDER
+  }
+
+  return api.utils.restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
     console.log('npm cache hit', npmCacheHit)
 
-    return api.utils.install().then(() => {
+    return api.utils.install(opts).then(() => {
       if (npmCacheHit) {
         return
       }
 
-      return api.utils.saveCachedNpm()
+      return api.utils.saveCachedNpm(NPM_CACHE)
     })
   })
 }
@@ -1131,7 +1168,8 @@ const api = {
   utils: {
     restoreCachedNpm,
     install,
-    saveCachedNpm
+    saveCachedNpm,
+    getPlatformAndArch
   }
 }
 
