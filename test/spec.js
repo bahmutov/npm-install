@@ -60,41 +60,45 @@ describe('install command', () => {
     this.exec = sandbox.stub(exec, 'exec').resolves()
   })
 
-  it('installs using Yarn and lock file', async function() {
-    const pathToYarn = '/path/to/yarn'
-    const opts = {
-      useYarn: true,
-      usePackageLock: true,
-      workingDirectory: '/current/working/directory'
-    }
-    sandbox
-      .stub(io, 'which')
-      .withArgs('yarn')
-      .resolves(pathToYarn)
-    await npmInstall.utils.install(opts)
-    expect(this.exec).to.have.been.calledOnceWithExactly(
-      quote(pathToYarn),
-      ['--frozen-lockfile'],
-      { cwd: opts.workingDirectory }
-    )
-  })
+  const workingDirectory = '/current/working/directory'
 
-  it('installs using Yarn without lock file', async function() {
+  context('using Yarn', () => {
     const pathToYarn = '/path/to/yarn'
-    const opts = {
-      useYarn: true,
-      usePackageLock: false,
-      workingDirectory: '/current/working/directory'
-    }
-    sandbox
-      .stub(io, 'which')
-      .withArgs('yarn')
-      .resolves(pathToYarn)
-    await npmInstall.utils.install(opts)
-    expect(this.exec).to.have.been.calledOnceWithExactly(
-      quote(pathToYarn),
-      [],
-      { cwd: opts.workingDirectory }
-    )
+
+    it('and lock file', async function() {
+      const opts = {
+        useYarn: true,
+        usePackageLock: true,
+        workingDirectory
+      }
+      sandbox
+        .stub(io, 'which')
+        .withArgs('yarn')
+        .resolves(pathToYarn)
+      await npmInstall.utils.install(opts)
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToYarn),
+        ['--frozen-lockfile'],
+        { cwd: workingDirectory }
+      )
+    })
+
+    it('without lock file', async function() {
+      const opts = {
+        useYarn: true,
+        usePackageLock: false,
+        workingDirectory
+      }
+      sandbox
+        .stub(io, 'which')
+        .withArgs('yarn')
+        .resolves(pathToYarn)
+      await npmInstall.utils.install(opts)
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToYarn),
+        [],
+        { cwd: workingDirectory }
+      )
+    })
   })
 })
