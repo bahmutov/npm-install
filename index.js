@@ -97,6 +97,8 @@ const install = (opts = {}) => {
   }
 }
 
+const getPlatformAndArch = () => `${process.platform}-${process.arch}`
+
 const npmInstallAction = () => {
   const usePackageLock = getInputBool('useLockFile', true)
   core.debug(`usePackageLock? ${usePackageLock}`)
@@ -104,25 +106,32 @@ const npmInstallAction = () => {
   const workingDirectory = core.getInput('working-directory') || process.cwd()
   core.debug(`working directory ${workingDirectory}`)
 
-  const packageFilename = path.join(workingDirectory, 'package.json')
-
-  const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
-
-  const yarnFilename = path.join(workingDirectory, 'yarn.lock')
-  const useYarn = fs.existsSync(yarnFilename)
-
   const getLockFilename = () => {
+    const packageFilename = path.join(workingDirectory, 'package.json')
+
     if (!usePackageLock) {
-      return packageFilename
+      return {
+        useYarn: false,
+        lockFilename: packageFilename
+      }
     }
 
-    return useYarn ? yarnFilename : packageLockFilename
+    const yarnFilename = path.join(workingDirectory, 'yarn.lock')
+    const useYarn = fs.existsSync(yarnFilename)
+
+    const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
+
+    const result = {
+      useYarn,
+      lockFilename: useYarn ? yarnFilename : packageLockFilename
+    }
+    return result
   }
 
-  const lockFilename = getLockFilename()
-  const lockHash = hasha.fromFileSync(lockFilename)
-  const platformAndArch = `${process.platform}-${process.arch}`
-  core.debug(`lock filename ${lockFilename}`)
+  const lockInfo = getLockFilename()
+  const lockHash = hasha.fromFileSync(lockInfo.lockFilename)
+  const platformAndArch = api.utils.getPlatformAndArch()
+  core.debug(`lock filename ${lockInfo.lockFilename}`)
   core.debug(`file hash ${lockHash}`)
   core.debug(`platform and arch ${platformAndArch}`)
 
@@ -132,7 +141,7 @@ const npmInstallAction = () => {
 
   const NPM_CACHE = (() => {
     const o = {}
-    if (useYarn) {
+    if (lockInfo.useYarn) {
       o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
       o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
     } else {
@@ -143,7 +152,7 @@ const npmInstallAction = () => {
   })()
 
   const opts = {
-    useYarn,
+    useYarn: lockInfo.useYarn,
     usePackageLock,
     workingDirectory,
     npmCacheFolder: NPM_CACHE_FOLDER
@@ -171,7 +180,8 @@ const api = {
   utils: {
     restoreCachedNpm,
     install,
-    saveCachedNpm
+    saveCachedNpm,
+    getPlatformAndArch
   }
 }
 
