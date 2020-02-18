@@ -6,6 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: bahmutov/npm-install@HEAD
-        working-directory: examples/yarn
+        with:
+          working-directory: examples/yarn
       - run: npm t
         working-directory: examples/yarn
