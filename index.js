@@ -119,8 +119,8 @@ const install = (opts = {}) => {
     return io.which('npm', true).then(npmPath => {
       console.log('npm at "%s"', npmPath)
 
-      const args = usePackageLock ? ['ci'] : ['install']
-      core.debug(`npm command: ${npmPath} ${args}`)
+      const args = shouldUsePackageLock ? ['ci'] : ['install']
+      core.debug(`npm command: "${npmPath}" ${args}`)
       return exec.exec(quote(npmPath), args, options)
     })
   }

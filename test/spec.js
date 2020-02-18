@@ -1,6 +1,8 @@
 const exec = require('@actions/exec')
+const core = require('@actions/core')
 const io = require('@actions/io')
 const quote = require('quote')
+const sinon = require('sinon')
 
 const npmInstall = require('../index')
 const utils = npmInstall.utils
@@ -97,6 +99,60 @@ describe('install command', () => {
       expect(this.exec).to.have.been.calledOnceWithExactly(
         quote(pathToYarn),
         [],
+        { cwd: workingDirectory }
+      )
+    })
+  })
+
+  context('using NPM', () => {
+    const pathToNpm = '/path/to/npm'
+
+    beforeEach(function() {
+      this.exportVariable = sandbox.stub(core, 'exportVariable')
+    })
+
+    it('installs using lock file', async function() {
+      const opts = {
+        useYarn: false,
+        usePackageLock: true,
+        workingDirectory
+      }
+      sandbox
+        .stub(io, 'which')
+        .withArgs('npm')
+        .resolves(pathToNpm)
+      await npmInstall.utils.install(opts)
+      expect(
+        this.exportVariable,
+        'export npm_config_cache was called'
+      ).to.be.calledOnceWithExactly('npm_config_cache', sinon.match.string)
+      expect(this.exportVariable).to.have.been.calledBefore(this.exec)
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToNpm),
+        ['ci'],
+        { cwd: workingDirectory }
+      )
+    })
+
+    it('installs without a lock file', async function() {
+      const opts = {
+        useYarn: false,
+        usePackageLock: false,
+        workingDirectory
+      }
+      sandbox
+        .stub(io, 'which')
+        .withArgs('npm')
+        .resolves(pathToNpm)
+      await npmInstall.utils.install(opts)
+      expect(
+        this.exportVariable,
+        'export npm_config_cache was called'
+      ).to.be.calledOnceWithExactly('npm_config_cache', sinon.match.string)
+      expect(this.exportVariable).to.have.been.calledBefore(this.exec)
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToNpm),
+        ['install'],
         { cwd: workingDirectory }
       )
     })
