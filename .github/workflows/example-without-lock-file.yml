@@ -1,0 +1,13 @@
+name: example-without-lock-file
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: bahmutov/npm-install@HEAD
+        with:
+          working-directory: examples/without-lock-file
+          useLockFile: false
+      - run: npm t
+        working-directory: examples/without-lock-file
