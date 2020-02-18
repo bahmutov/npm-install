@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha test/helper 'test/*spec.js'",
+    "pretest": "npm run build",
     "build": "ncc build -o dist index.js",
     "semantic-release": "semantic-release"
   },

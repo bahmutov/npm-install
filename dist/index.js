@@ -1120,15 +1120,15 @@ const install = () => {
 }
 
 const npmInstallAction = () => {
-  return api.restoreCachedNpm().then(npmCacheHit => {
+  return api.utils.restoreCachedNpm().then(npmCacheHit => {
     console.log('npm cache hit', npmCacheHit)
 
-    return api.install().then(() => {
+    return api.utils.install().then(() => {
       if (npmCacheHit) {
         return
       }
 
-      return api.saveCachedNpm()
+      return api.utils.saveCachedNpm()
     })
   })
 }
