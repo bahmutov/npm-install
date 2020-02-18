@@ -985,10 +985,7 @@ const core = __webpack_require__(470)
 const exec = __webpack_require__(986)
 const io = __webpack_require__(1)
 const hasha = __webpack_require__(309)
-const {
-  restoreCache,
-  saveCache
-} = __webpack_require__(211)
+const { restoreCache, saveCache } = __webpack_require__(211)
 const fs = __webpack_require__(747)
 const os = __webpack_require__(87)
 const path = __webpack_require__(622)
@@ -1017,23 +1014,13 @@ const getInputBool = (name, defaultValue = false) => {
 const usePackageLock = getInputBool('useLockFile', true)
 core.debug(`usePackageLock? ${usePackageLock}`)
 
-const workingDirectory =
-  core.getInput('working-directory') || process.cwd()
+const workingDirectory = core.getInput('working-directory') || process.cwd()
 core.debug(`working directory ${workingDirectory}`)
 
-const yarnFilename = path.join(
-  workingDirectory,
-  'yarn.lock'
-)
-const packageFilename = path.join(
-  workingDirectory,
-  'package.json'
-)
+const yarnFilename = path.join(workingDirectory, 'yarn.lock')
+const packageFilename = path.join(workingDirectory, 'package.json')
 
-const packageLockFilename = path.join(
-  workingDirectory,
-  'package-lock.json'
-)
+const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
 
 const useYarn = fs.existsSync(yarnFilename)
 
@@ -1077,66 +1064,80 @@ const restoreCachedNpm = () => {
 
 const saveCachedNpm = () => {
   console.log('saving NPM modules')
-  return saveCache(
-    NPM_CACHE.inputPath,
-    NPM_CACHE.primaryKey
-  )
+  return saveCache(NPM_CACHE.inputPath, NPM_CACHE.primaryKey)
 }
 
-const install = () => {
+const hasOption = (name, o) => name in o
+
+const getOption = (name, o, defaultValue) =>
+  hasOption(name, o) ? o[name] : defaultValue
+
+const install = (opts = {}) => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
 
+  const shouldUseYarn = getOption('useYarn', opts, useYarn)
+  const shouldUsePackageLock = getOption('usePackageLock', opts, usePackageLock)
+
   const options = {
-    cwd: workingDirectory
+    cwd: getOption('workingDirectory', opts, workingDirectory)
   }
 
-  if (useYarn) {
+  if (shouldUseYarn) {
     console.log('installing NPM dependencies using Yarn')
     return io.which('yarn', true).then(yarnPath => {
       console.log('yarn at "%s"', yarnPath)
 
-      const args = usePackageLock
-        ? ['--frozen-lockfile']
-        : []
-      core.debug(`yarn command: ${yarnPath} ${args}`)
+      const args = shouldUsePackageLock ? ['--frozen-lockfile'] : []
+      core.debug(
+        `yarn command: "${yarnPath}" ${args} ${JSON.stringify(options)}`
+      )
       return exec.exec(quote(yarnPath), args, options)
     })
   } else {
     console.log('installing NPM dependencies')
-    core.exportVariable(
-      'npm_config_cache',
-      NPM_CACHE_FOLDER
-    )
+    core.exportVariable('npm_config_cache', NPM_CACHE_FOLDER)
 
     return io.which('npm', true).then(npmPath => {
       console.log('npm at "%s"', npmPath)
 
-      const args = usePackageLock ? ['ci'] : ['install']
-      core.debug(`npm command: ${npmPath} ${args}`)
+      const args = shouldUsePackageLock ? ['ci'] : ['install']
+      core.debug(`npm command: "${npmPath}" ${args}`)
       return exec.exec(quote(npmPath), args, options)
     })
   }
 }
 
 const npmInstallAction = () => {
-  return restoreCachedNpm().then(npmCacheHit => {
+  return api.utils.restoreCachedNpm().then(npmCacheHit => {
     console.log('npm cache hit', npmCacheHit)
 
-    return install().then(() => {
+    return api.utils.install().then(() => {
       if (npmCacheHit) {
         return
       }
 
-      return saveCachedNpm()
+      return api.utils.saveCachedNpm()
     })
   })
 }
 
-module.exports = {
-  npmInstallAction
+/**
+ * Object of exports, useful to easy testing when mocking individual methods
+ */
+const api = {
+  npmInstallAction,
+  // export functions mostly for testing
+  utils: {
+    restoreCachedNpm,
+    install,
+    saveCachedNpm
+  }
 }
 
+module.exports = api
+
+// @ts-ignore
 if (!module.parent) {
   console.log('running npm-install GitHub Action')
   npmInstallAction()

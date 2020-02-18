@@ -4,7 +4,9 @@
   "description": "GitHub Action for install npm dependencies with caching without any configuration",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Write tests\"",
+    "test": "npm run unit",
+    "unit": "mocha test/helper 'test/*spec.js'",
+    "pretest": "npm run build",
     "build": "ncc build -o dist index.js",
     "semantic-release": "semantic-release"
   },
@@ -36,9 +38,14 @@
   "devDependencies": {
     "@types/node": "^12.0.4",
     "@zeit/ncc": "0.20.5",
+    "chai": "4.2.0",
     "husky": "3.0.9",
+    "mocha": "7.0.1",
     "prettier": "1.19.1",
-    "semantic-release": "^15.13.30"
+    "proxyquire": "2.1.3",
+    "semantic-release": "^15.13.30",
+    "sinon": "8.1.1",
+    "sinon-chai": "3.4.0"
   },
   "private": false,
   "publishConfig": {
