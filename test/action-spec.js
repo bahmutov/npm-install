@@ -20,6 +20,8 @@ describe('action', () => {
     sandbox.stub(os, 'homedir').returns(homedir)
     sandbox.stub(process, 'cwd').returns(cwd)
     sandbox.stub(utils, 'getPlatformAndArch').returns('platform-arch')
+    // always stub "core.exportVariable" to avoid polluting actual workflow
+    sandbox.stub(core, 'exportVariable').returns()
   })
 
   context('finds Yarn', function() {
