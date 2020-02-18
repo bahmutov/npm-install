@@ -2,6 +2,16 @@
 
 > GitHub Action for install npm dependencies with caching without any configuration
 
+## CI status
+
+<!-- prettier-ignore-start -->
+Repo | Status
+--- | ---
+[npm-install](.github/workflows/main.yml) | ![this repo](https://github.com/bahmutov/npm-install/workflows/main/badge.svg?branch=master)
+[npm-install-action-example](https://github.com/bahmutov/npm-install-action-example/blob/master/.github/workflows/main.yml) | ![npm-install-action-example](https://github.com/bahmutov/npm-install-action-example/workflows/main/badge.svg?branch=master)
+[npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example/blob/master/.github/workflows/main.yml) | ![npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example/workflows/main/badge.svg?branch=master)
+<!-- prettier-ignore-end -->
+
 ## Examples
 
 ### Basic
