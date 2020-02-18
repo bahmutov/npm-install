@@ -1009,16 +1009,6 @@ const getInputBool = (name, defaultValue = false) => {
   return defaultValue
 }
 
-const usePackageLock = getInputBool('useLockFile', true)
-core.debug(`usePackageLock? ${usePackageLock}`)
-
-const workingDirectory = core.getInput('working-directory') || process.cwd()
-core.debug(`working directory ${workingDirectory}`)
-
-const packageFilename = path.join(workingDirectory, 'package.json')
-
-const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
-
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
   return restoreCache(
@@ -1035,9 +1025,6 @@ const saveCachedNpm = npmCache => {
 
 const hasOption = (name, o) => name in o
 
-const getOption = (name, o, defaultValue) =>
-  hasOption(name, o) ? o[name] : defaultValue
-
 const install = (opts = {}) => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
@@ -1046,9 +1033,17 @@ const install = (opts = {}) => {
     console.error('passed options %o', opts)
     throw new Error('Missing useYarn option')
   }
+  if (!hasOption('usePackageLock', opts)) {
+    console.error('passed options %o', opts)
+    throw new Error('Missing usePackageLock option')
+  }
+  if (!hasOption('workingDirectory', opts)) {
+    console.error('passed options %o', opts)
+    throw new Error('Missing workingDirectory option')
+  }
 
   const shouldUseYarn = opts.useYarn
-  const shouldUsePackageLock = getOption('usePackageLock', opts, usePackageLock)
+  const shouldUsePackageLock = opts.usePackageLock
   const npmCacheFolder = opts.npmCacheFolder
   if (!npmCacheFolder) {
     console.error('passed opts %o', opts)
@@ -1056,7 +1051,7 @@ const install = (opts = {}) => {
   }
 
   const options = {
-    cwd: getOption('workingDirectory', opts, workingDirectory)
+    cwd: opts.workingDirectory
   }
 
   if (shouldUseYarn) {
@@ -1085,6 +1080,16 @@ const install = (opts = {}) => {
 }
 
 const npmInstallAction = () => {
+  const usePackageLock = getInputBool('useLockFile', true)
+  core.debug(`usePackageLock? ${usePackageLock}`)
+
+  const workingDirectory = core.getInput('working-directory') || process.cwd()
+  core.debug(`working directory ${workingDirectory}`)
+
+  const packageFilename = path.join(workingDirectory, 'package.json')
+
+  const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
+
   const yarnFilename = path.join(workingDirectory, 'yarn.lock')
   const useYarn = fs.existsSync(yarnFilename)
 
@@ -1121,6 +1126,8 @@ const npmInstallAction = () => {
 
   const opts = {
     useYarn,
+    usePackageLock,
+    workingDirectory,
     npmCacheFolder: NPM_CACHE_FOLDER
   }
 
