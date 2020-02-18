@@ -991,8 +991,6 @@ const os = __webpack_require__(87)
 const path = __webpack_require__(622)
 const quote = __webpack_require__(531)
 
-const homeDirectory = os.homedir()
-
 /**
  * Grabs a boolean GitHub Action parameter input and casts it.
  * @param {string} name - parameter name
@@ -1031,13 +1029,6 @@ const getLockFilename = () => {
 
   return useYarn ? yarnFilename : packageLockFilename
 }
-
-const lockFilename = getLockFilename()
-const lockHash = hasha.fromFileSync(lockFilename)
-const platformAndArch = `${process.platform}-${process.arch}`
-core.debug(`lock filename ${lockFilename}`)
-core.debug(`file hash ${lockHash}`)
-core.debug(`platform and arch ${platformAndArch}`)
 
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
@@ -1100,7 +1091,15 @@ const install = (opts = {}) => {
 }
 
 const npmInstallAction = () => {
+  const lockFilename = getLockFilename()
+  const lockHash = hasha.fromFileSync(lockFilename)
+  const platformAndArch = `${process.platform}-${process.arch}`
+  core.debug(`lock filename ${lockFilename}`)
+  core.debug(`file hash ${lockHash}`)
+  core.debug(`platform and arch ${platformAndArch}`)
+
   // enforce the same NPM cache folder across different operating systems
+  const homeDirectory = os.homedir()
   const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
 
   const NPM_CACHE = (() => {
