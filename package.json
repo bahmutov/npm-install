@@ -31,6 +31,7 @@
     "@actions/core": "1.2.0",
     "@actions/exec": "1.0.1",
     "@actions/io": "1.0.1",
+    "@bahmutov/print-env": "1.2.0",
     "cache": "github:cypress-io/github-actions-cache#8bec6cc",
     "hasha": "5.1.0",
     "quote": "0.4.0"
