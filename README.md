@@ -2,14 +2,15 @@
 
 > GitHub Action for install npm dependencies with caching without any configuration
 
-## CI status
+## CI
 
 <!-- prettier-ignore-start -->
-Repo | Status
+Example | Status
 --- | ---
-[npm-install](.github/workflows/main.yml) | ![this repo](https://github.com/bahmutov/npm-install/workflows/main/badge.svg?branch=master)
-[npm-install-action-example](https://github.com/bahmutov/npm-install-action-example/blob/master/.github/workflows/main.yml) | ![npm-install-action-example](https://github.com/bahmutov/npm-install-action-example/workflows/main/badge.svg?branch=master)
-[npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example/blob/master/.github/workflows/main.yml) | ![npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example/workflows/main/badge.svg?branch=master)
+[main](.github/workflows/main.yml) | ![this repo](https://github.com/bahmutov/npm-install/workflows/main/badge.svg?branch=master)
+[basic](.github/workflows/example-basic.yml) | ![basic example](https://github.com/bahmutov/npm-install/workflows/example-basic/badge.svg?branch=master)
+[Yarn](.github/workflows/example-yarn.yml) | ![yarn example](https://github.com/bahmutov/npm-install/workflows/example-yarn/badge.svg?branch=master)
+[without lock file](.github/workflows/example-without-lock-file.yml) | ![without lockfile example](https://github.com/bahmutov/npm-install/workflows/example-without-lock-file/badge.svg?branch=master)
 <!-- prettier-ignore-end -->
 
 ## Examples
@@ -33,7 +34,7 @@ jobs:
       - run: npm t
 ```
 
-See [bahmutov/npm-install-action-example](https://github.com/bahmutov/npm-install-action-example).
+See [bahmutov/npm-install-action-example](https://github.com/bahmutov/npm-install-action-example) ![npm-install-action-example](https://github.com/bahmutov/npm-install-action-example/workflows/main/badge.svg?branch=master).
 
 ### Subfolders
 
@@ -73,7 +74,7 @@ jobs:
         working-directory: app2
 ```
 
-See [npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example).
+See [npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example) ![npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example/workflows/main/badge.svg?branch=master).
 
 ### Use lock file
 
@@ -103,11 +104,14 @@ ACTIONS_RUNNER_DEBUG: true
 ACTIONS_STEP_DEBUG: true
 ```
 
+**Tip:** environment variable `ACTIONS_STEP_DEBUG` enables debug messages from this action itself, try it first.
+
 ## Testing
 
 Using Mocha and Sinon.js following the guide [How to set up Mocha with Sinon.js](https://glebbahmutov.com/blog/mocha-and-sinon/). You can find the tests in [test](test) folder. In general:
 
 - all environment inputs are done inside the action, so they can be stubbed and controlled during tests
+- there are separate workflows in [.github/workflows](.github/workflows) that match examples. Each workflow uses this action to install dependencies
 
 ## Links
 
