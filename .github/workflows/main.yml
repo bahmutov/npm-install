@@ -2,32 +2,32 @@ name: main
 on: [push]
 
 jobs:
-  # build-and-test:
-  #   runs-on: ubuntu-latest
-  #   name: Build and test
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v1
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Build and test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
 
-  #     # caching NPM dependencies
-  #     # https://github.com/actions/cache/blob/master/examples.md#node---npm
-  #     - uses: actions/cache@v1
-  #       with:
-  #         path: ~/.npm
-  #         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-node-
+      # caching NPM dependencies
+      # https://github.com/actions/cache/blob/master/examples.md#node---npm
+      - uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-  #     - run: node -v
-  #     - run: npm ci
-  #     - run: npm test
+      - run: node -v
+      - run: npm ci
+      - run: npm test
 
   release:
     runs-on: ubuntu-latest
     name: release
-    # needs: build-and-test
+    needs: build-and-test
     # only release from the master branch
-    # if: github.ref == 'master'
+    if: github.ref == 'master'
     steps:
       - name: Checkout
         uses: actions/checkout@v1
