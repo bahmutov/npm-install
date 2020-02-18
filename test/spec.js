@@ -63,6 +63,7 @@ describe('install command', () => {
   })
 
   const workingDirectory = '/current/working/directory'
+  const npmCacheFolder = '/path/to/user/cache'
 
   context('using Yarn', () => {
     const pathToYarn = '/path/to/yarn'
@@ -71,7 +72,8 @@ describe('install command', () => {
       const opts = {
         useYarn: true,
         usePackageLock: true,
-        workingDirectory
+        workingDirectory,
+        npmCacheFolder
       }
       sandbox
         .stub(io, 'which')
@@ -89,7 +91,8 @@ describe('install command', () => {
       const opts = {
         useYarn: true,
         usePackageLock: false,
-        workingDirectory
+        workingDirectory,
+        npmCacheFolder
       }
       sandbox
         .stub(io, 'which')
@@ -115,7 +118,8 @@ describe('install command', () => {
       const opts = {
         useYarn: false,
         usePackageLock: true,
-        workingDirectory
+        workingDirectory,
+        npmCacheFolder
       }
       sandbox
         .stub(io, 'which')
@@ -125,7 +129,7 @@ describe('install command', () => {
       expect(
         this.exportVariable,
         'export npm_config_cache was called'
-      ).to.be.calledOnceWithExactly('npm_config_cache', sinon.match.string)
+      ).to.be.calledOnceWithExactly('npm_config_cache', npmCacheFolder)
       expect(this.exportVariable).to.have.been.calledBefore(this.exec)
       expect(this.exec).to.have.been.calledOnceWithExactly(
         quote(pathToNpm),
@@ -138,7 +142,8 @@ describe('install command', () => {
       const opts = {
         useYarn: false,
         usePackageLock: false,
-        workingDirectory
+        workingDirectory,
+        npmCacheFolder
       }
       sandbox
         .stub(io, 'which')
@@ -148,7 +153,7 @@ describe('install command', () => {
       expect(
         this.exportVariable,
         'export npm_config_cache was called'
-      ).to.be.calledOnceWithExactly('npm_config_cache', sinon.match.string)
+      ).to.be.calledOnceWithExactly('npm_config_cache', npmCacheFolder)
       expect(this.exportVariable).to.have.been.calledBefore(this.exec)
       expect(this.exec).to.have.been.calledOnceWithExactly(
         quote(pathToNpm),

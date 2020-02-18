@@ -1039,9 +1039,6 @@ core.debug(`lock filename ${lockFilename}`)
 core.debug(`file hash ${lockHash}`)
 core.debug(`platform and arch ${platformAndArch}`)
 
-// enforce the same NPM cache folder across different operating systems
-const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
-
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
   return restoreCache(
@@ -1067,6 +1064,11 @@ const install = (opts = {}) => {
 
   const shouldUseYarn = getOption('useYarn', opts, useYarn)
   const shouldUsePackageLock = getOption('usePackageLock', opts, usePackageLock)
+  const npmCacheFolder = opts.npmCacheFolder
+  if (!npmCacheFolder) {
+    console.error('passed opts %o', opts)
+    throw new Error('Missing npm cache folder to use')
+  }
 
   const options = {
     cwd: getOption('workingDirectory', opts, workingDirectory)
@@ -1085,7 +1087,7 @@ const install = (opts = {}) => {
     })
   } else {
     console.log('installing NPM dependencies')
-    core.exportVariable('npm_config_cache', NPM_CACHE_FOLDER)
+    core.exportVariable('npm_config_cache', npmCacheFolder)
 
     return io.which('npm', true).then(npmPath => {
       console.log('npm at "%s"', npmPath)
@@ -1098,6 +1100,9 @@ const install = (opts = {}) => {
 }
 
 const npmInstallAction = () => {
+  // enforce the same NPM cache folder across different operating systems
+  const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
+
   const NPM_CACHE = (() => {
     const o = {}
     if (useYarn) {
@@ -1110,10 +1115,14 @@ const npmInstallAction = () => {
     return o
   })()
 
+  const opts = {
+    npmCacheFolder: NPM_CACHE_FOLDER
+  }
+
   return api.utils.restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
     console.log('npm cache hit', npmCacheHit)
 
-    return api.utils.install().then(() => {
+    return api.utils.install(opts).then(() => {
       if (npmCacheHit) {
         return
       }
