@@ -1113,6 +1113,11 @@ const npmInstallAction = () => {
 
   const lockInfo = getLockFilename()
   const lockHash = hasha.fromFileSync(lockInfo.lockFilename)
+  if (!lockHash) {
+    throw new Error(
+      `could not compute hash from file "${lockInfo.lockFilename}"`
+    )
+  }
   const platformAndArch = api.utils.getPlatformAndArch()
   core.debug(`lock filename ${lockInfo.lockFilename}`)
   core.debug(`file hash ${lockHash}`)

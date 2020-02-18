@@ -74,6 +74,54 @@ describe('action', () => {
     })
   })
 
+  context('does not find Yarn', function() {
+    const yarnFilename = path.join(cwd, 'yarn.lock')
+    const packageLockFilename = path.join(cwd, 'package-lock.json')
+    const npmCachePath = path.join(homedir, '.npm')
+    const pathToNpm = '/path/to/npm'
+    const cacheKey = 'npm-platform-arch-hash-from-package-lock-file'
+
+    beforeEach(function() {
+      sandbox
+        .stub(core, 'getInput')
+        .withArgs('useLockFile')
+        .returns()
+
+      sandbox
+        .stub(fs, 'existsSync')
+        .withArgs(yarnFilename)
+        .returns(false)
+
+      sandbox
+        .stub(io, 'which')
+        .withArgs('npm')
+        .resolves(pathToNpm)
+
+      sandbox
+        .stub(hasha, 'fromFileSync')
+        .withArgs(packageLockFilename)
+        .returns('hash-from-package-lock-file')
+
+      const cacheHit = false
+      this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
+      this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
+    })
+
+    it('uses package lock and NPM', async function() {
+      await action.npmInstallAction()
+
+      expect(this.restoreCache).to.be.calledOnceWithExactly(
+        npmCachePath,
+        cacheKey,
+        cacheKey
+      )
+      expect(this.exec).to.be.calledOnceWithExactly(quote(pathToNpm), ['ci'], {
+        cwd
+      })
+      expect(this.saveCache).to.be.calledOnceWithExactly(npmCachePath, cacheKey)
+    })
+  })
+
   context('useLockFile:0', function() {
     const pathToNpm = '/path/to/npm'
     beforeEach(() => {
