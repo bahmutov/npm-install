@@ -1041,30 +1041,19 @@ core.debug(`platform and arch ${platformAndArch}`)
 
 // enforce the same NPM cache folder across different operating systems
 const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
-const NPM_CACHE = (() => {
-  const o = {}
-  if (useYarn) {
-    o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
-    o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
-  } else {
-    o.inputPath = NPM_CACHE_FOLDER
-    o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
-  }
-  return o
-})()
 
-const restoreCachedNpm = () => {
+const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
   return restoreCache(
-    NPM_CACHE.inputPath,
-    NPM_CACHE.primaryKey,
-    NPM_CACHE.restoreKeys
+    npmCache.inputPath,
+    npmCache.primaryKey,
+    npmCache.restoreKeys
   )
 }
 
-const saveCachedNpm = () => {
+const saveCachedNpm = npmCache => {
   console.log('saving NPM modules')
-  return saveCache(NPM_CACHE.inputPath, NPM_CACHE.primaryKey)
+  return saveCache(npmCache.inputPath, npmCache.primaryKey)
 }
 
 const hasOption = (name, o) => name in o
@@ -1109,7 +1098,19 @@ const install = (opts = {}) => {
 }
 
 const npmInstallAction = () => {
-  return api.utils.restoreCachedNpm().then(npmCacheHit => {
+  const NPM_CACHE = (() => {
+    const o = {}
+    if (useYarn) {
+      o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
+      o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
+    } else {
+      o.inputPath = NPM_CACHE_FOLDER
+      o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
+    }
+    return o
+  })()
+
+  return api.utils.restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
     console.log('npm cache hit', npmCacheHit)
 
     return api.utils.install().then(() => {
@@ -1117,7 +1118,7 @@ const npmInstallAction = () => {
         return
       }
 
-      return api.utils.saveCachedNpm()
+      return api.utils.saveCachedNpm(NPM_CACHE)
     })
   })
 }
