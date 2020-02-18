@@ -5,6 +5,8 @@ const quote = require('quote')
 const os = require('os')
 const path = require('path')
 const hasha = require('hasha')
+const fs = require('fs')
+const cache = require('cache/lib/index')
 
 const action = require('../index')
 const utils = action.utils
@@ -17,89 +19,133 @@ describe('action', () => {
     this.exec = sandbox.stub(exec, 'exec').resolves()
     sandbox.stub(os, 'homedir').returns(homedir)
     sandbox.stub(process, 'cwd').returns(cwd)
-    const filename = path.join(cwd, 'package.json')
-    sandbox
-      .stub(hasha, 'fromFileSync')
-      .withArgs(filename)
-      .returns('hash-from-package-json')
     sandbox.stub(utils, 'getPlatformAndArch').returns('platform-arch')
   })
 
-  it('installs with useLockFile: 0', async function() {
-    // useLockFile: '0'
-    sandbox
-      .stub(core, 'getInput')
-      .withArgs('useLockFile')
-      .returns('0')
+  context('finds Yarn', function() {
+    const pathToYarn = '/path/to/yarn'
+    const yarnFilename = path.join(cwd, 'yarn.lock')
+    const yarnCachePath = path.join(homedir, '.cache', 'yarn')
+    const cacheKey = 'yarn-platform-arch-hash-from-yarn-lock-file'
 
-    const pathToNpm = '/path/to/npm'
-    sandbox
-      .stub(io, 'which')
-      .withArgs('npm')
-      .resolves(pathToNpm)
+    beforeEach(function() {
+      sandbox
+        .stub(core, 'getInput')
+        .withArgs('useLockFile')
+        .returns()
 
-    const cacheHit = true
-    const restoreCache = sandbox
-      .stub(utils, 'restoreCachedNpm')
-      .resolves(cacheHit)
-    const saveCache = sandbox.stub(utils, 'saveCachedNpm')
-    await action.npmInstallAction()
-    // caching based on the file package.json in the current working directory
-    expect(restoreCache).to.have.been.calledOnceWithExactly({
-      inputPath: path.join(homedir, '.npm'),
-      primaryKey: 'npm-platform-arch-hash-from-package-json',
-      restoreKeys: 'npm-platform-arch-hash-from-package-json'
+      sandbox
+        .stub(fs, 'existsSync')
+        .withArgs(yarnFilename)
+        .returns(true)
+
+      sandbox
+        .stub(io, 'which')
+        .withArgs('yarn')
+        .resolves(pathToYarn)
+
+      sandbox
+        .stub(hasha, 'fromFileSync')
+        .withArgs(yarnFilename)
+        .returns('hash-from-yarn-lock-file')
+
+      const cacheHit = false
+      this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
+      this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
     })
 
-    expect(this.exec).to.have.been.calledOnceWithExactly(
-      quote(pathToNpm),
-      ['install'],
-      {
-        cwd
-      }
-    )
+    it('and uses lock file', async function() {
+      await action.npmInstallAction()
 
-    expect(saveCache, 'cache was hit').to.not.have.been.called
+      expect(this.restoreCache).to.be.calledOnceWithExactly(
+        yarnCachePath,
+        cacheKey,
+        cacheKey
+      )
+      expect(this.exec).to.be.calledOnceWithExactly(
+        quote(pathToYarn),
+        ['--frozen-lockfile'],
+        { cwd }
+      )
+      expect(this.saveCache).to.be.calledOnceWithExactly(
+        yarnCachePath,
+        cacheKey
+      )
+    })
   })
 
-  it('installs with useLockFile: 0 and saves cache', async function() {
-    // useLockFile: '0'
-    sandbox
-      .stub(core, 'getInput')
-      .withArgs('useLockFile')
-      .returns('0')
-
+  context('useLockFile:0', function() {
     const pathToNpm = '/path/to/npm'
-    sandbox
-      .stub(io, 'which')
-      .withArgs('npm')
-      .resolves(pathToNpm)
+    beforeEach(() => {
+      sandbox
+        .stub(core, 'getInput')
+        .withArgs('useLockFile')
+        .returns('0')
 
-    const cacheHit = false
-    const restoreCache = sandbox
-      .stub(utils, 'restoreCachedNpm')
-      .resolves(cacheHit)
-    const saveCache = sandbox.stub(utils, 'saveCachedNpm')
-    await action.npmInstallAction()
-    // caching based on the file package.json in the current working directory
-    const cacheParams = {
-      inputPath: path.join(homedir, '.npm'),
-      primaryKey: 'npm-platform-arch-hash-from-package-json',
-      restoreKeys: 'npm-platform-arch-hash-from-package-json'
-    }
-    expect(restoreCache).to.have.been.calledOnceWithExactly(cacheParams)
+      sandbox
+        .stub(io, 'which')
+        .withArgs('npm')
+        .resolves(pathToNpm)
 
-    expect(this.exec).to.have.been.calledOnceWithExactly(
-      quote(pathToNpm),
-      ['install'],
-      {
-        cwd
+      const filename = path.join(cwd, 'package.json')
+      sandbox
+        .stub(hasha, 'fromFileSync')
+        .withArgs(filename)
+        .returns('hash-from-package-json')
+    })
+
+    it('hits the cache', async function() {
+      const cacheHit = true
+      const restoreCache = sandbox
+        .stub(utils, 'restoreCachedNpm')
+        .resolves(cacheHit)
+      const saveCache = sandbox.stub(utils, 'saveCachedNpm')
+      await action.npmInstallAction()
+      // caching based on the file package.json in the current working directory
+      expect(restoreCache).to.have.been.calledOnceWithExactly({
+        inputPath: path.join(homedir, '.npm'),
+        primaryKey: 'npm-platform-arch-hash-from-package-json',
+        restoreKeys: 'npm-platform-arch-hash-from-package-json'
+      })
+
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToNpm),
+        ['install'],
+        {
+          cwd
+        }
+      )
+
+      expect(saveCache, 'cache was hit').to.not.have.been.called
+    })
+
+    it('saves new cache', async function() {
+      const cacheHit = false
+      const restoreCache = sandbox
+        .stub(utils, 'restoreCachedNpm')
+        .resolves(cacheHit)
+      const saveCache = sandbox.stub(utils, 'saveCachedNpm')
+      await action.npmInstallAction()
+      // caching based on the file package.json in the current working directory
+      const cacheParams = {
+        inputPath: path.join(homedir, '.npm'),
+        primaryKey: 'npm-platform-arch-hash-from-package-json',
+        restoreKeys: 'npm-platform-arch-hash-from-package-json'
       }
-    )
+      expect(restoreCache).to.have.been.calledOnceWithExactly(cacheParams)
 
-    expect(
-      saveCache,
-      'new cache needs to be saved'
-    ).to.have.been.calledOnceWithExactly(cacheParams)
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToNpm),
+        ['install'],
+        {
+          cwd
+        }
+      )
+
+      expect(
+        saveCache,
+        'new cache needs to be saved'
+      ).to.have.been.calledOnceWithExactly(cacheParams)
+    })
   })
 })

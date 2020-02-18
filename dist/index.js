@@ -985,7 +985,7 @@ const core = __webpack_require__(470)
 const exec = __webpack_require__(986)
 const io = __webpack_require__(1)
 const hasha = __webpack_require__(309)
-const { restoreCache, saveCache } = __webpack_require__(211)
+const cache = __webpack_require__(211)
 const fs = __webpack_require__(747)
 const os = __webpack_require__(87)
 const path = __webpack_require__(622)
@@ -1011,7 +1011,7 @@ const getInputBool = (name, defaultValue = false) => {
 
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
-  return restoreCache(
+  return cache.restoreCache(
     npmCache.inputPath,
     npmCache.primaryKey,
     npmCache.restoreKeys
@@ -1020,7 +1020,7 @@ const restoreCachedNpm = npmCache => {
 
 const saveCachedNpm = npmCache => {
   console.log('saving NPM modules')
-  return saveCache(npmCache.inputPath, npmCache.primaryKey)
+  return cache.saveCache(npmCache.inputPath, npmCache.primaryKey)
 }
 
 const hasOption = (name, o) => name in o
@@ -1100,6 +1100,7 @@ const npmInstallAction = () => {
 
     const yarnFilename = path.join(workingDirectory, 'yarn.lock')
     const useYarn = fs.existsSync(yarnFilename)
+    core.debug(`yarn lock file "${yarnFilename}" exists? ${useYarn}`)
 
     const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
 
