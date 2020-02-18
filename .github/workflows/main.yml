@@ -32,11 +32,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
+      - run: echo $GITHUB_SHA
+
       # trying to use this action to install dependencies for semantic release
       - uses: bahmutov/npm-install@HEAD
-
-      - name: print GitHub SHA
-        run: npx @bahmutov/print-env GITHUB_SHA
 
       # https://github.com/cycjimmy/semantic-release-action
       - name: Semantic Release
