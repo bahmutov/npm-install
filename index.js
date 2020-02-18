@@ -138,23 +138,35 @@ const install = () => {
 }
 
 const npmInstallAction = () => {
-  return restoreCachedNpm().then(npmCacheHit => {
+  return api.restoreCachedNpm().then(npmCacheHit => {
     console.log('npm cache hit', npmCacheHit)
 
-    return install().then(() => {
+    return api.install().then(() => {
       if (npmCacheHit) {
         return
       }
 
-      return saveCachedNpm()
+      return api.saveCachedNpm()
     })
   })
 }
 
-module.exports = {
-  npmInstallAction
+/**
+ * Object of exports, useful to easy testing when mocking individual methods
+ */
+const api = {
+  npmInstallAction,
+  // export functions mostly for testing
+  utils: {
+    restoreCachedNpm,
+    install,
+    saveCachedNpm
+  }
 }
 
+module.exports = api
+
+// @ts-ignore
 if (!module.parent) {
   console.log('running npm-install GitHub Action')
   npmInstallAction()
