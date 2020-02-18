@@ -1,3 +1,7 @@
+const exec = require('@actions/exec')
+const io = require('@actions/io')
+const quote = require('quote')
+
 const npmInstall = require('../index')
 const utils = npmInstall.utils
 
@@ -11,10 +15,7 @@ it('exports a function', () => {
 it('cache was not hit', async () => {
   // previous cache not found
   const cacheHit = false
-  const restoreCache = sandbox.stub(
-    utils,
-    'restoreCachedNpm'
-  )
+  const restoreCache = sandbox.stub(utils, 'restoreCachedNpm')
   const install = sandbox.stub(utils, 'install')
   const saveCache = sandbox.stub(utils, 'saveCachedNpm')
 
@@ -23,8 +24,7 @@ it('cache was not hit', async () => {
   saveCache.resolves()
 
   await npmInstall.npmInstallAction()
-  expect(saveCache, 'new cache was saved').to.have.been
-    .calledOnce
+  expect(saveCache, 'new cache was saved').to.have.been.calledOnce
   expect(
     restoreCache,
     'restore cache was checked first'
@@ -38,10 +38,7 @@ it('cache was not hit', async () => {
 it('cache was hit', async () => {
   // we don't need to save cache in this case
   const cacheHit = true
-  const restoreCache = sandbox.stub(
-    utils,
-    'restoreCachedNpm'
-  )
+  const restoreCache = sandbox.stub(utils, 'restoreCachedNpm')
   const install = sandbox.stub(utils, 'install')
   const saveCache = sandbox.stub(utils, 'saveCachedNpm')
 
@@ -50,12 +47,35 @@ it('cache was hit', async () => {
   saveCache.resolves()
 
   await npmInstall.npmInstallAction()
-  expect(install, 'install was called').to.have.been
-    .calledOnce
-  expect(saveCache, 'cache remains the same').to.have.not
-    .been.called
+  expect(install, 'install was called').to.have.been.calledOnce
+  expect(saveCache, 'cache remains the same').to.have.not.been.called
   expect(
     restoreCache,
     'restore cache was checked first'
   ).to.have.been.calledBefore(install)
+})
+
+describe('install command', () => {
+  beforeEach(function() {
+    this.exec = sandbox.stub(exec, 'exec').resolves()
+  })
+
+  it('installs using Yarn and lock file', async function() {
+    const pathToYarn = '/path/to/yarn'
+    const opts = {
+      useYarn: true,
+      usePackageLock: true,
+      workingDirectory: '/current/working/directory'
+    }
+    sandbox
+      .stub(io, 'which')
+      .withArgs('yarn')
+      .resolves(pathToYarn)
+    await npmInstall.utils.install(opts)
+    expect(this.exec).to.have.been.calledOnceWithExactly(
+      quote(pathToYarn),
+      ['--frozen-lockfile'],
+      { cwd: opts.workingDirectory }
+    )
+  })
 })
