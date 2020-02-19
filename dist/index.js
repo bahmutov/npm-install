@@ -1073,7 +1073,7 @@ const install = (opts = {}) => {
       console.log('npm at "%s"', npmPath)
 
       const args = shouldUsePackageLock ? ['ci'] : ['install']
-      core.debug(`npm command: "${npmPath}" ${args}`)
+      core.debug(`npm command: "${npmPath}" ${args} ${JSON.stringify(options)}`)
       return exec.exec(quote(npmPath), args, options)
     })
   }
