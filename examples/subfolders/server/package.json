@@ -1,0 +1,15 @@
+{
+  "name": "example-subfolders-server",
+  "private": true,
+  "version": "1.0.0",
+  "description": "server part",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "3.0.0"
+  }
+}

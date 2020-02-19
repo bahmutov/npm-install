@@ -1,0 +1,24 @@
+name: example-subfolders
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      # typically we would use a SHA or branch name
+      # of an action like
+      # - uses: bahmutov/npm-install@v1
+      # but for internal testing, let's use the local action
+      - uses: ./
+        with:
+          # server use NPM package lock file
+          working-directory: examples/subfolders/server
+      - uses: ./
+        with:
+          # client uses yarn lock
+          working-directory: examples/subfolders/client
+      # run tests
+      - run: npm t
+        working-directory: examples/subfolders/server
+      - run: npm t
+        working-directory: examples/subfolders/client
