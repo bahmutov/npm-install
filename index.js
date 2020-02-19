@@ -99,63 +99,72 @@ const install = (opts = {}) => {
 
 const getPlatformAndArch = () => `${process.platform}-${process.arch}`
 
-const npmInstallAction = () => {
-  const usePackageLock = getInputBool('useLockFile', true)
-  core.debug(`usePackageLock? ${usePackageLock}`)
+const getLockFilename = usePackageLock => workingDirectory => {
+  const packageFilename = path.join(workingDirectory, 'package.json')
 
-  const workingDirectory = core.getInput('working-directory') || process.cwd()
-  core.debug(`working directory ${workingDirectory}`)
-
-  const getLockFilename = () => {
-    const packageFilename = path.join(workingDirectory, 'package.json')
-
-    if (!usePackageLock) {
-      return {
-        useYarn: false,
-        lockFilename: packageFilename
-      }
+  if (!usePackageLock) {
+    return {
+      useYarn: false,
+      lockFilename: packageFilename
     }
-
-    const yarnFilename = path.join(workingDirectory, 'yarn.lock')
-    const useYarn = fs.existsSync(yarnFilename)
-    core.debug(`yarn lock file "${yarnFilename}" exists? ${useYarn}`)
-
-    const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
-
-    const result = {
-      useYarn,
-      lockFilename: useYarn ? yarnFilename : packageLockFilename
-    }
-    return result
   }
 
-  const lockInfo = getLockFilename()
+  const yarnFilename = path.join(workingDirectory, 'yarn.lock')
+  const useYarn = fs.existsSync(yarnFilename)
+  core.debug(`yarn lock file "${yarnFilename}" exists? ${useYarn}`)
+
+  const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
+
+  const result = {
+    useYarn,
+    lockFilename: useYarn ? yarnFilename : packageLockFilename
+  }
+  return result
+}
+
+const getCacheParams = ({
+  useYarn,
+  homeDirectory,
+  npmCacheFolder,
+  lockHash
+}) => {
+  const platformAndArch = api.utils.getPlatformAndArch()
+  core.debug(`platform and arch ${platformAndArch}`)
+  const o = {}
+  if (useYarn) {
+    o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
+    o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
+  } else {
+    o.inputPath = npmCacheFolder
+    o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
+  }
+  return o
+}
+
+const installInOneFolder = ({ usePackageLock, workingDirectory }) => {
+  core.debug(`usePackageLock? ${usePackageLock}`)
+  core.debug(`working directory ${workingDirectory}`)
+
+  const lockInfo = getLockFilename(usePackageLock)(workingDirectory)
   const lockHash = hasha.fromFileSync(lockInfo.lockFilename)
   if (!lockHash) {
     throw new Error(
       `could not compute hash from file "${lockInfo.lockFilename}"`
     )
   }
-  const platformAndArch = api.utils.getPlatformAndArch()
   core.debug(`lock filename ${lockInfo.lockFilename}`)
   core.debug(`file hash ${lockHash}`)
-  core.debug(`platform and arch ${platformAndArch}`)
 
   // enforce the same NPM cache folder across different operating systems
   const homeDirectory = os.homedir()
   const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
 
-  const NPM_CACHE = (() => {
-    const o = {}
-    if (lockInfo.useYarn) {
-      o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
-      o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
-    } else {
-      o.inputPath = NPM_CACHE_FOLDER
-      o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
-    }
-    return o
-  })()
+  const NPM_CACHE = getCacheParams({
+    useYarn: lockInfo.useYarn,
+    homeDirectory,
+    npmCacheFolder: NPM_CACHE_FOLDER,
+    lockHash
+  })
 
   const opts = {
     useYarn: lockInfo.useYarn,
@@ -177,6 +186,25 @@ const npmInstallAction = () => {
   })
 }
 
+const npmInstallAction = async () => {
+  const usePackageLock = getInputBool('useLockFile', true)
+  core.debug(`usePackageLock? ${usePackageLock}`)
+
+  const wds = core.getInput('working-directory') || process.cwd()
+  const workingDirectories = wds
+    .split('\n')
+    .map(s => s.trim())
+    .filter(Boolean)
+
+  core.debug(
+    `iterating over working ${workingDirectories.length} directorie(s)`
+  )
+
+  for (const workingDirectory of workingDirectories) {
+    await api.utils.installInOneFolder({ usePackageLock, workingDirectory })
+  }
+}
+
 /**
  * Object of exports, useful to easy testing when mocking individual methods
  */
@@ -187,7 +215,8 @@ const api = {
     restoreCachedNpm,
     install,
     saveCachedNpm,
-    getPlatformAndArch
+    getPlatformAndArch,
+    installInOneFolder
   }
 }
 
