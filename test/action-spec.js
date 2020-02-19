@@ -198,4 +198,34 @@ describe('action', () => {
       ).to.have.been.calledOnceWithExactly(cacheParams)
     })
   })
+
+  context('multiple working directories', function() {
+    it('iterates over each working directory', async function() {
+      // should automatically skip empty subfolders
+      sandbox.stub(core, 'getInput').withArgs('working-directory').returns(`
+          subfolder/foo
+          subfolder/bar
+
+          subfolder/baz
+        `)
+
+      const installInOneFolder = sandbox
+        .stub(utils, 'installInOneFolder')
+        .resolves()
+      await action.npmInstallAction()
+      expect(installInOneFolder).to.be.calledThrice
+      expect(installInOneFolder).to.be.calledWithExactly({
+        usePackageLock: true,
+        workingDirectory: 'subfolder/foo'
+      })
+      expect(installInOneFolder).to.be.calledWithExactly({
+        usePackageLock: true,
+        workingDirectory: 'subfolder/bar'
+      })
+      expect(installInOneFolder).to.be.calledWithExactly({
+        usePackageLock: true,
+        workingDirectory: 'subfolder/baz'
+      })
+    })
+  })
 })

@@ -1,7 +1,7 @@
 name: example-subfolders
 on: [push]
 jobs:
-  test:
+  separate-actions:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -17,6 +17,22 @@ jobs:
         with:
           # client uses yarn lock
           working-directory: examples/subfolders/client
+      # run tests
+      - run: npm t
+        working-directory: examples/subfolders/server
+      - run: npm t
+        working-directory: examples/subfolders/client
+
+  separate-lines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: ./
+        with:
+          # specify a directory per line
+          working-directory: |
+            examples/subfolders/server
+            examples/subfolders/client
       # run tests
       - run: npm t
         working-directory: examples/subfolders/server
