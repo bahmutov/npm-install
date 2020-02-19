@@ -77,6 +77,25 @@ jobs:
 
 See [npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example) ![npm-install-monorepo-example](https://github.com/bahmutov/npm-install-monorepo-example/workflows/main/badge.svg?branch=master).
 
+You can also specify multiple subfolders in a single action; one subfolder per line.
+
+```yml
+name: main
+on: [push]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    name: Build and test
+    steps:
+      - uses: actions/checkout@v1
+      - uses: bahmutov/npm-install@v1
+        with:
+          working-directory: |
+            app1
+            app2
+```
+
 ### Use lock file
 
 By default, this action will use a lock file like `package-lock.json` or `yarn.lock`. You can set `useLockFile: false` to use just `package.json` which might be better for [building libraries](https://twitter.com/mikeal/status/1202298796274700288).
