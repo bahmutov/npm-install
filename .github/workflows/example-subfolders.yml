@@ -11,9 +11,11 @@ jobs:
       # but for internal testing, let's use the local action
       - uses: ./
         with:
+          # server use NPM package lock file
           working-directory: examples/subfolders/server
       - uses: ./
         with:
+          # client uses yarn lock
           working-directory: examples/subfolders/client
       # run tests
       - run: npm t
