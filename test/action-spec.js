@@ -15,7 +15,7 @@ describe('action', () => {
   const cwd = '/path/to/mock/cwd'
   const homedir = '/home/path/for/test/user'
 
-  beforeEach(function() {
+  beforeEach(function () {
     this.exec = sandbox.stub(exec, 'exec').resolves()
     sandbox.stub(os, 'homedir').returns(homedir)
     sandbox.stub(process, 'cwd').returns(cwd)
@@ -24,13 +24,13 @@ describe('action', () => {
     sandbox.stub(core, 'exportVariable').returns()
   })
 
-  context('finds Yarn', function() {
+  context('finds Yarn', function () {
     const pathToYarn = '/path/to/yarn'
     const yarnFilename = path.join(cwd, 'yarn.lock')
     const yarnCachePath = path.join(homedir, '.cache', 'yarn')
     const cacheKey = 'yarn-platform-arch-hash-from-yarn-lock-file'
 
-    beforeEach(function() {
+    beforeEach(function () {
       sandbox
         .stub(core, 'getInput')
         .withArgs('useLockFile')
@@ -56,7 +56,7 @@ describe('action', () => {
       this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
     })
 
-    it('and uses lock file', async function() {
+    it('and uses lock file', async function () {
       await action.npmInstallAction()
 
       expect(this.restoreCache).to.be.calledOnceWithExactly(
@@ -76,14 +76,14 @@ describe('action', () => {
     })
   })
 
-  context('does not find Yarn', function() {
+  context('does not find Yarn', function () {
     const yarnFilename = path.join(cwd, 'yarn.lock')
     const packageLockFilename = path.join(cwd, 'package-lock.json')
     const npmCachePath = path.join(homedir, '.npm')
     const pathToNpm = '/path/to/npm'
     const cacheKey = 'npm-platform-arch-hash-from-package-lock-file'
 
-    beforeEach(function() {
+    beforeEach(function () {
       sandbox
         .stub(core, 'getInput')
         .withArgs('useLockFile')
@@ -109,7 +109,7 @@ describe('action', () => {
       this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
     })
 
-    it('uses package lock and NPM', async function() {
+    it('uses package lock and NPM', async function () {
       await action.npmInstallAction()
 
       expect(this.restoreCache).to.be.calledOnceWithExactly(
@@ -124,7 +124,7 @@ describe('action', () => {
     })
   })
 
-  context('useLockFile:0', function() {
+  context('useLockFile:0', function () {
     const pathToNpm = '/path/to/npm'
     beforeEach(() => {
       sandbox
@@ -144,7 +144,7 @@ describe('action', () => {
         .returns('hash-from-package-json')
     })
 
-    it('hits the cache', async function() {
+    it('hits the cache', async function () {
       const cacheHit = true
       const restoreCache = sandbox
         .stub(utils, 'restoreCachedNpm')
@@ -169,7 +169,7 @@ describe('action', () => {
       expect(saveCache, 'cache was hit').to.not.have.been.called
     })
 
-    it('saves new cache', async function() {
+    it('saves new cache', async function () {
       const cacheHit = false
       const restoreCache = sandbox
         .stub(utils, 'restoreCachedNpm')
@@ -199,8 +199,8 @@ describe('action', () => {
     })
   })
 
-  context('multiple working directories', function() {
-    it('iterates over each working directory', async function() {
+  context('multiple working directories', function () {
+    it('iterates over each working directory', async function () {
       // should automatically skip empty subfolders
       sandbox.stub(core, 'getInput').withArgs('working-directory').returns(`
           subfolder/foo
@@ -228,4 +228,32 @@ describe('action', () => {
       })
     })
   })
+
+
+  context('auth token', function () {
+    it('npm config set', async function () {
+      sandbox.stub(core, 'getInput').withArgs('auth-token').returns('abcde')
+
+      const pathToNpm = '/path/to/npm'
+      sandbox
+        .stub(io, 'which')
+        .withArgs('npm')
+        .resolves(pathToNpm)
+
+      const installInOneFolder = sandbox
+        .stub(utils, 'installInOneFolder')
+        .resolves()
+
+      await action.npmInstallAction()
+
+      expect(this.exec).to.be.calledOnceWithExactly(
+        quote(pathToNpm),
+        ['config', 'set', '//registry.npmjs.org/:_authToken', 'abcde'],
+      )
+
+
+    })
+  })
+
+
 })

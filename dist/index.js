@@ -1168,6 +1168,13 @@ const installInOneFolder = ({ usePackageLock, workingDirectory }) => {
   })
 }
 
+const setAuthToken = async (authToken) => {
+  const npmPath = await io.which('npm', true)
+  const args = ['config', 'set', '//registry.npmjs.org/:_authToken', authToken]
+  core.debug(`npm command: "${npmPath}" ${args}`)
+  await exec.exec(quote(npmPath), args)
+}
+
 const npmInstallAction = async () => {
   const usePackageLock = getInputBool('useLockFile', true)
   core.debug(`usePackageLock? ${usePackageLock}`)
@@ -1181,6 +1188,11 @@ const npmInstallAction = async () => {
   core.debug(
     `iterating over working ${workingDirectories.length} directorie(s)`
   )
+
+  const authToken = core.getInput('auth-token')
+  if (authToken) {
+    await api.utils.setAuthToken(authToken)
+  }
 
   for (const workingDirectory of workingDirectories) {
     await api.utils.installInOneFolder({ usePackageLock, workingDirectory })
@@ -1198,7 +1210,8 @@ const api = {
     install,
     saveCachedNpm,
     getPlatformAndArch,
-    installInOneFolder
+    installInOneFolder,
+    setAuthToken,
   }
 }
 
