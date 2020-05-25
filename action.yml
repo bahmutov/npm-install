@@ -16,7 +16,7 @@ inputs:
   working-directory:
     description: One or many subfolders separated by a new line character.
     required: false
-  auth-toke:
+  auth-token:
     description: The npm authentication token (for private packages).
     required: false
 
