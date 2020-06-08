@@ -8,3 +8,10 @@ runs:
 branding:
   color: 'yellow'
   icon: 'command'
+inputs:
+  working-directory:
+    description: 'Working directory to specify subfolder in which dependencies are defined'
+    required: false
+  useLockFile:
+    description: 'Option to enable or disable use of a lock file (package-lock.json/yarn.lock)'
+    required: false
