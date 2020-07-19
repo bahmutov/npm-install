@@ -3,7 +3,7 @@ const core = require('@actions/core')
 const exec = require('@actions/exec')
 const io = require('@actions/io')
 const hasha = require('hasha')
-const cache = require('cache/lib/index')
+const cache = require('@actions/cache')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
@@ -30,7 +30,7 @@ const getInputBool = (name, defaultValue = false) => {
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
   return cache.restoreCache(
-    npmCache.inputPath,
+    npmCache.inputPaths,
     npmCache.primaryKey,
     npmCache.restoreKeys
   )
@@ -38,7 +38,7 @@ const restoreCachedNpm = npmCache => {
 
 const saveCachedNpm = npmCache => {
   console.log('saving NPM modules')
-  return cache.saveCache(npmCache.inputPath, npmCache.primaryKey)
+  return cache.saveCache(npmCache.inputPaths, npmCache.primaryKey)
 }
 
 const hasOption = (name, o) => name in o
@@ -132,11 +132,13 @@ const getCacheParams = ({
   core.debug(`platform and arch ${platformAndArch}`)
   const o = {}
   if (useYarn) {
-    o.inputPath = path.join(homeDirectory, '.cache', 'yarn')
-    o.primaryKey = o.restoreKeys = `yarn-${platformAndArch}-${lockHash}`
+    o.inputPaths = [path.join(homeDirectory, '.cache', 'yarn')]
+    o.primaryKey = `yarn-${platformAndArch}-${lockHash}`
+    o.restoreKeys = [o.primaryKey]
   } else {
-    o.inputPath = npmCacheFolder
-    o.primaryKey = o.restoreKeys = `npm-${platformAndArch}-${lockHash}`
+    o.inputPaths = [npmCacheFolder]
+    o.primaryKey = `npm-${platformAndArch}-${lockHash}`
+    o.restoreKeys = [o.primaryKey]
   }
   return o
 }
