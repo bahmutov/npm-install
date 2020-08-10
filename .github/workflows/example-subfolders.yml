@@ -2,7 +2,11 @@ name: example-subfolders
 on: [push]
 jobs:
   separate-actions:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    name: Test on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v1
       # typically we would use a SHA or branch name
@@ -24,7 +28,11 @@ jobs:
         working-directory: examples/subfolders/client
 
   separate-lines:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    name: Test on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v1
       - uses: ./

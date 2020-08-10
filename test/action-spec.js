@@ -6,7 +6,7 @@ const os = require('os')
 const path = require('path')
 const hasha = require('hasha')
 const fs = require('fs')
-const cache = require('cache/lib/index')
+const cache = require('@actions/cache')
 
 const action = require('../index')
 const utils = action.utils
@@ -27,7 +27,7 @@ describe('action', () => {
   context('finds Yarn', function() {
     const pathToYarn = '/path/to/yarn'
     const yarnFilename = path.join(cwd, 'yarn.lock')
-    const yarnCachePath = path.join(homedir, '.cache', 'yarn')
+    const yarnCachePaths = [path.join(homedir, '.cache', 'yarn')]
     const cacheKey = 'yarn-platform-arch-hash-from-yarn-lock-file'
 
     beforeEach(function() {
@@ -60,9 +60,9 @@ describe('action', () => {
       await action.npmInstallAction()
 
       expect(this.restoreCache).to.be.calledOnceWithExactly(
-        yarnCachePath,
+        yarnCachePaths,
         cacheKey,
-        cacheKey
+        [cacheKey]
       )
       expect(this.exec).to.be.calledOnceWithExactly(
         quote(pathToYarn),
@@ -70,7 +70,7 @@ describe('action', () => {
         { cwd }
       )
       expect(this.saveCache).to.be.calledOnceWithExactly(
-        yarnCachePath,
+        yarnCachePaths,
         cacheKey
       )
     })
@@ -79,7 +79,7 @@ describe('action', () => {
   context('does not find Yarn', function() {
     const yarnFilename = path.join(cwd, 'yarn.lock')
     const packageLockFilename = path.join(cwd, 'package-lock.json')
-    const npmCachePath = path.join(homedir, '.npm')
+    const npmCachePaths = [path.join(homedir, '.npm')]
     const pathToNpm = '/path/to/npm'
     const cacheKey = 'npm-platform-arch-hash-from-package-lock-file'
 
@@ -113,14 +113,14 @@ describe('action', () => {
       await action.npmInstallAction()
 
       expect(this.restoreCache).to.be.calledOnceWithExactly(
-        npmCachePath,
+        npmCachePaths,
         cacheKey,
-        cacheKey
+        [cacheKey]
       )
       expect(this.exec).to.be.calledOnceWithExactly(quote(pathToNpm), ['ci'], {
         cwd
       })
-      expect(this.saveCache).to.be.calledOnceWithExactly(npmCachePath, cacheKey)
+      expect(this.saveCache).to.be.calledOnceWithExactly(npmCachePaths, cacheKey)
     })
   })
 
@@ -153,9 +153,9 @@ describe('action', () => {
       await action.npmInstallAction()
       // caching based on the file package.json in the current working directory
       expect(restoreCache).to.have.been.calledOnceWithExactly({
-        inputPath: path.join(homedir, '.npm'),
+        inputPaths: [path.join(homedir, '.npm')],
         primaryKey: 'npm-platform-arch-hash-from-package-json',
-        restoreKeys: 'npm-platform-arch-hash-from-package-json'
+        restoreKeys: ['npm-platform-arch-hash-from-package-json']
       })
 
       expect(this.exec).to.have.been.calledOnceWithExactly(
@@ -178,9 +178,9 @@ describe('action', () => {
       await action.npmInstallAction()
       // caching based on the file package.json in the current working directory
       const cacheParams = {
-        inputPath: path.join(homedir, '.npm'),
+        inputPaths: [path.join(homedir, '.npm')],
         primaryKey: 'npm-platform-arch-hash-from-package-json',
-        restoreKeys: 'npm-platform-arch-hash-from-package-json'
+        restoreKeys: ['npm-platform-arch-hash-from-package-json']
       }
       expect(restoreCache).to.have.been.calledOnceWithExactly(cacheParams)
 
