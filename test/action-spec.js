@@ -120,7 +120,10 @@ describe('action', () => {
       expect(this.exec).to.be.calledOnceWithExactly(quote(pathToNpm), ['ci'], {
         cwd
       })
-      expect(this.saveCache).to.be.calledOnceWithExactly(npmCachePaths, cacheKey)
+      expect(this.saveCache).to.be.calledOnceWithExactly(
+        npmCachePaths,
+        cacheKey
+      )
     })
   })
 

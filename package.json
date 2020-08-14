@@ -4,6 +4,8 @@
   "description": "GitHub Action for install npm dependencies with caching without any configuration",
   "main": "dist/index.js",
   "scripts": {
+    "format": "prettier --write './**/*'",
+    "format:check": "prettier --check './**/*'",
     "test": "npm run unit",
     "unit": "mocha test/helper 'test/*spec.js'",
     "pretest": "npm run build",
@@ -54,7 +56,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run build"
+      "pre-commit": "npm run format:check && npm run build && npm run test"
     }
   },
   "files": [
