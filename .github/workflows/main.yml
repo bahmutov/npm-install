@@ -23,7 +23,12 @@ jobs:
 
       - run: node -v
       - run: npm ci
-      - run: npm run format:check
+
+      # only makes sense to check code format on 1 OS
+      - name: Linting 🧹
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run format:check
+
       - run: npm test
 
   release:
