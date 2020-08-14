@@ -1,5 +1,5 @@
 name: example-subfolders
-on: [push]
+on: [push, pull_request]
 jobs:
   separate-actions:
     runs-on: ${{ matrix.os }}
