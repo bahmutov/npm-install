@@ -23,6 +23,7 @@ jobs:
 
       - run: node -v
       - run: npm ci
+      - run: npm run format:check
       - run: npm test
 
   release:
