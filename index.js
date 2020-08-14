@@ -38,7 +38,19 @@ const restoreCachedNpm = npmCache => {
 
 const saveCachedNpm = npmCache => {
   console.log('saving NPM modules')
-  return cache.saveCache(npmCache.inputPaths, npmCache.primaryKey)
+
+  return cache
+    .saveCache(npmCache.inputPaths, npmCache.primaryKey)
+    .catch(err => {
+      // don't throw an error if cache already exists, which may happen due to
+      // race conditions
+      if (err.message.includes('Cache already exists')) {
+        console.warn(err.message)
+        return -1
+      }
+      // otherwise re-throw
+      throw err
+    })
 }
 
 const hasOption = (name, o) => name in o
