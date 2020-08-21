@@ -145,12 +145,14 @@ const getCacheParams = ({
   const o = {}
   if (useYarn) {
     o.inputPaths = [path.join(homeDirectory, '.cache', 'yarn')]
-    o.primaryKey = `yarn-${platformAndArch}-${lockHash}`
-    o.restoreKeys = [o.primaryKey]
+    const archKey = `yarn-${platformAndArch}-`
+    o.primaryKey = `${archKey}${lockHash}`
+    o.restoreKeys = [o.primaryKey, archKey]
   } else {
     o.inputPaths = [npmCacheFolder]
-    o.primaryKey = `npm-${platformAndArch}-${lockHash}`
-    o.restoreKeys = [o.primaryKey]
+    const archKey = `npm-${platformAndArch}-`
+    o.primaryKey = `${archKey}${lockHash}`
+    o.restoreKeys = [o.primaryKey, archKey]
   }
   return o
 }

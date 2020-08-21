@@ -28,7 +28,8 @@ describe('action', () => {
     const pathToYarn = '/path/to/yarn'
     const yarnFilename = path.join(cwd, 'yarn.lock')
     const yarnCachePaths = [path.join(homedir, '.cache', 'yarn')]
-    const cacheKey = 'yarn-platform-arch-hash-from-yarn-lock-file'
+    const archCacheKey = 'yarn-platform-arch-'
+    const cacheKey = `${archCacheKey}hash-from-yarn-lock-file`
 
     beforeEach(function() {
       sandbox
@@ -62,7 +63,7 @@ describe('action', () => {
       expect(this.restoreCache).to.be.calledOnceWithExactly(
         yarnCachePaths,
         cacheKey,
-        [cacheKey]
+        [cacheKey, archCacheKey]
       )
       expect(this.exec).to.be.calledOnceWithExactly(
         quote(pathToYarn),
@@ -81,7 +82,8 @@ describe('action', () => {
     const packageLockFilename = path.join(cwd, 'package-lock.json')
     const npmCachePaths = [path.join(homedir, '.npm')]
     const pathToNpm = '/path/to/npm'
-    const cacheKey = 'npm-platform-arch-hash-from-package-lock-file'
+    const archCacheKey = 'npm-platform-arch-'
+    const cacheKey = `${archCacheKey}hash-from-package-lock-file`
 
     beforeEach(function() {
       sandbox
@@ -115,7 +117,7 @@ describe('action', () => {
       expect(this.restoreCache).to.be.calledOnceWithExactly(
         npmCachePaths,
         cacheKey,
-        [cacheKey]
+        [cacheKey, archCacheKey]
       )
       expect(this.exec).to.be.calledOnceWithExactly(quote(pathToNpm), ['ci'], {
         cwd
@@ -158,7 +160,10 @@ describe('action', () => {
       expect(restoreCache).to.have.been.calledOnceWithExactly({
         inputPaths: [path.join(homedir, '.npm')],
         primaryKey: 'npm-platform-arch-hash-from-package-json',
-        restoreKeys: ['npm-platform-arch-hash-from-package-json']
+        restoreKeys: [
+          'npm-platform-arch-hash-from-package-json',
+          'npm-platform-arch-'
+        ]
       })
 
       expect(this.exec).to.have.been.calledOnceWithExactly(
@@ -183,7 +188,10 @@ describe('action', () => {
       const cacheParams = {
         inputPaths: [path.join(homedir, '.npm')],
         primaryKey: 'npm-platform-arch-hash-from-package-json',
-        restoreKeys: ['npm-platform-arch-hash-from-package-json']
+        restoreKeys: [
+          'npm-platform-arch-hash-from-package-json',
+          'npm-platform-arch-'
+        ]
       }
       expect(restoreCache).to.have.been.calledOnceWithExactly(cacheParams)
 
