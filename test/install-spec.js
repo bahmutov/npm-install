@@ -11,7 +11,8 @@ describe('install command', () => {
     this.exec = sandbox.stub(exec, 'exec').resolves()
   })
 
-  const workingDirectory = '/current/working/directory'
+  // by resolving we normalize the folder on Linux and Windows CI
+  const workingDirectory = path.resolve('/current/working/directory')
   const npmCacheFolder = '/path/to/user/cache'
 
   context('using Yarn', () => {
