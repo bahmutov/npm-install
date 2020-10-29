@@ -12,7 +12,8 @@ const action = require('../index')
 const utils = action.utils
 
 describe('action', () => {
-  const cwd = '/path/to/mock/cwd'
+  // by resolving we normalize the folder on Linux and Windows CI
+  const cwd = path.resolve('/path/to/mock/cwd')
   const homedir = '/home/path/for/test/user'
 
   beforeEach(function() {
