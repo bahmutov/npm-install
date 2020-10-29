@@ -2883,7 +2883,7 @@ const install = (opts = {}) => {
   }
 
   const options = {
-    cwd: opts.workingDirectory
+    cwd: path.resolve(opts.workingDirectory)
   }
 
   if (shouldUseYarn) {
@@ -3006,15 +3006,16 @@ const npmInstallAction = async () => {
   const usePackageLock = getInputBool('useLockFile', true)
   core.debug(`usePackageLock? ${usePackageLock}`)
 
+  // Note: working directory for "actions/exec" should be absolute
+
   const wds = core.getInput('working-directory') || process.cwd()
+
   const workingDirectories = wds
     .split('\n')
     .map(s => s.trim())
     .filter(Boolean)
 
-  core.debug(
-    `iterating over working ${workingDirectories.length} directorie(s)`
-  )
+  core.debug(`iterating over working ${workingDirectories.length} dis(s)`)
 
   for (const workingDirectory of workingDirectories) {
     await api.utils.installInOneFolder({ usePackageLock, workingDirectory })
