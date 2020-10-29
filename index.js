@@ -213,7 +213,7 @@ const npmInstallAction = async () => {
     .map(s => s.trim())
     .filter(Boolean)
 
-  core.debug(`iterating over working ${workingDirectories.length} dis(s)`)
+  core.debug(`iterating over working ${workingDirectories.length} folder(s)`)
 
   for (const workingDirectory of workingDirectories) {
     await api.utils.installInOneFolder({ usePackageLock, workingDirectory })
