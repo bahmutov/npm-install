@@ -160,7 +160,7 @@ const installInOneFolder = ({ usePackageLock, workingDirectory }) => {
   core.debug(`working directory ${workingDirectory}`)
 
   const lockInfo = getLockFilename(usePackageLock)(workingDirectory)
-  const lockHash = hasha.fromFileSync(lockInfo.lockFilename)
+  const lockHash = usePackageLock ? hasha.fromFileSync(lockInfo.lockFilename) : 'no-lockfile'
   if (!lockHash) {
     throw new Error(
       `could not compute hash from file "${lockInfo.lockFilename}"`
