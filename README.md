@@ -135,6 +135,7 @@ Using Mocha and Sinon.js following the guide [How to set up Mocha with Sinon.js]
 
 ## Links
 
+- [Do Not Let NPM Cache Snowball on CI](https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/) blog post
 - [Trying GitHub Actions](https://glebbahmutov.com/blog/trying-github-actions/) blog post
 - [GitHub Actions in Action](https://slides.com/bahmutov/github-actions-in-action) slides
 
