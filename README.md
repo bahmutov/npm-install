@@ -106,6 +106,16 @@ By default, this action will use a lock file like `package-lock.json` or `yarn.l
     useLockFile: false
 ```
 
+### Production dependencies
+
+You can install just the production dependencies (without installing dev dependencies) by setting an environment variable `NODE_ENV` variable
+
+```yml
+- uses: bahmutov/npm-install@v1
+  env:
+    NODE_ENV: production
+```
+
 ## NPM
 
 If you are writing your own GitHub Action and would like to use this action as a utility function, import it and run it.
