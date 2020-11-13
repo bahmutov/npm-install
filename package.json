@@ -56,7 +56,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run format:check && npm run build && npm run test"
+      "pre-commit": "npm run format:check && npm test"
     }
   },
   "files": [
