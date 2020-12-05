@@ -98,7 +98,7 @@ jobs:
 
 ### Use lock file
 
-By default, this action will use a lock file like `package-lock.json` or `yarn.lock`. You can set `useLockFile: false` to use just `package.json` which might be better for [building libraries](https://twitter.com/mikeal/status/1202298796274700288).
+By default, this action will use a lock file like `package-lock.json`, `npm-shrinkwrap.json` or `yarn.lock`. You can set `useLockFile: false` to use just `package.json` which might be better for [building libraries](https://twitter.com/mikeal/status/1202298796274700288).
 
 ```yml
 - uses: bahmutov/npm-install@v1
