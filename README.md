@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and test
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: bahmutov/npm-install@v1
       - run: npm t
 ```
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and test
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - uses: bahmutov/npm-install@v1
         with:
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and test
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: bahmutov/npm-install@v1
         with:
           working-directory: |

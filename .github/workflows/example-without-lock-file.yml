@@ -4,7 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: bahmutov/npm-install@HEAD
         with:
           working-directory: examples/without-lock-file
