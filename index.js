@@ -125,11 +125,19 @@ const getLockFilename = usePackageLock => workingDirectory => {
   const useYarn = fs.existsSync(yarnFilename)
   core.debug(`yarn lock file "${yarnFilename}" exists? ${useYarn}`)
 
+  const npmShrinkwrapFilename = path.join(
+    workingDirectory,
+    'npm-shrinkwrap.json'
+  )
   const packageLockFilename = path.join(workingDirectory, 'package-lock.json')
+  const npmFilename =
+    !useYarn && fs.existsSync(npmShrinkwrapFilename)
+      ? npmShrinkwrapFilename
+      : packageLockFilename
 
   const result = {
     useYarn,
-    lockFilename: useYarn ? yarnFilename : packageLockFilename
+    lockFilename: useYarn ? yarnFilename : npmFilename
   }
   return result
 }

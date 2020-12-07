@@ -1,0 +1,12 @@
+name: example-shrinkwrap
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: bahmutov/npm-install@HEAD
+        with:
+          working-directory: examples/shrinkwrap
+      - run: npm t
+        working-directory: examples/shrinkwrap
