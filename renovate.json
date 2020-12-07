@@ -1,0 +1,27 @@
+{
+  "extends": ["config:base"],
+  "automerge": true,
+  "prHourlyLimit": 2,
+  "updateNotScheduled": false,
+  "timezone": "America/New_York",
+  "schedule": ["after 10pm and before 5am on every weekday", "every weekend"],
+  "masterIssue": true,
+  "labels": ["type: dependencies", "renovate"],
+  "packageRules": [
+    {
+      "packagePatterns": ["*"],
+      "excludePackagePatterns": [
+        "@actions/cache",
+        "@actions/core",
+        "@actions/exec",
+        "@actions/io",
+        "@bahmutov/print-env",
+        "hasha",
+        "quote",
+        "semantic-release",
+        "@zeit/ncc"
+      ],
+      "enabled": false
+    }
+  ]
+}
