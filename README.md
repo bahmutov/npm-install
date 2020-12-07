@@ -9,6 +9,7 @@ Example | Status
 --- | ---
 [main](.github/workflows/main.yml) | ![this repo](https://github.com/bahmutov/npm-install/workflows/main/badge.svg?branch=master)
 [basic](.github/workflows/example-basic.yml) | ![basic example](https://github.com/bahmutov/npm-install/workflows/example-basic/badge.svg?branch=master)
+[shrinkwrap](.github/workflows/example-shrinkwrap.yml) | ![shrinkwrap example](https://github.com/bahmutov/npm-install/workflows/example-shrinkwrap/badge.svg?branch=master)
 [Yarn](.github/workflows/example-yarn.yml) | ![yarn example](https://github.com/bahmutov/npm-install/workflows/example-yarn/badge.svg?branch=master)
 [without lock file](.github/workflows/example-without-lock-file.yml) | ![without lockfile example](https://github.com/bahmutov/npm-install/workflows/example-without-lock-file/badge.svg?branch=master)
 [subfolders](.github/workflows/example-subfolders.yml) | ![subfolders example](https://github.com/bahmutov/npm-install/workflows/example-subfolders/badge.svg?branch=master)
@@ -98,7 +99,7 @@ jobs:
 
 ### Use lock file
 
-By default, this action will use a lock file like `package-lock.json` or `yarn.lock`. You can set `useLockFile: false` to use just `package.json` which might be better for [building libraries](https://twitter.com/mikeal/status/1202298796274700288).
+By default, this action will use a lock file like `package-lock.json`, `npm-shrinkwrap.json` or `yarn.lock`. You can set `useLockFile: false` to use just `package.json` which might be better for [building libraries](https://twitter.com/mikeal/status/1202298796274700288).
 
 ```yml
 - uses: bahmutov/npm-install@v1

@@ -79,10 +79,10 @@ describe('action', () => {
 
   context('does not find Yarn', function() {
     const yarnFilename = path.join(cwd, 'yarn.lock')
+    const npmShrinkwrapFilename = path.join(cwd, 'npm-shrinkwrap.json')
     const packageLockFilename = path.join(cwd, 'package-lock.json')
     const npmCachePaths = [path.join(homedir, '.npm')]
     const pathToNpm = '/path/to/npm'
-    const cacheKey = 'npm-platform-arch-hash-from-package-lock-file'
 
     beforeEach(function() {
       sandbox
@@ -100,31 +100,77 @@ describe('action', () => {
         .withArgs('npm')
         .resolves(pathToNpm)
 
-      sandbox
-        .stub(hasha, 'fromFileSync')
-        .withArgs(packageLockFilename)
-        .returns('hash-from-package-lock-file')
-
       const cacheHit = false
       this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
       this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
     })
 
-    it('uses package lock and NPM', async function() {
-      await action.npmInstallAction()
+    context('finds npm-shrinkwrap.json', async function() {
+      const cacheKey = 'npm-platform-arch-hash-from-npm-shrinkwrap-file'
 
-      expect(this.restoreCache).to.be.calledOnceWithExactly(
-        npmCachePaths,
-        cacheKey,
-        [cacheKey]
-      )
-      expect(this.exec).to.be.calledOnceWithExactly(quote(pathToNpm), ['ci'], {
-        cwd
+      beforeEach(function() {
+        fs.existsSync.withArgs(npmShrinkwrapFilename).returns(true)
+
+        sandbox
+          .stub(hasha, 'fromFileSync')
+          .withArgs(npmShrinkwrapFilename)
+          .returns('hash-from-npm-shrinkwrap-file')
       })
-      expect(this.saveCache).to.be.calledOnceWithExactly(
-        npmCachePaths,
-        cacheKey
-      )
+
+      it('uses npm-shrinkwrap.json and NPM', async function() {
+        await action.npmInstallAction()
+
+        expect(this.restoreCache).to.be.calledOnceWithExactly(
+          npmCachePaths,
+          cacheKey,
+          [cacheKey]
+        )
+        expect(this.exec).to.be.calledOnceWithExactly(
+          quote(pathToNpm),
+          ['ci'],
+          {
+            cwd
+          }
+        )
+        expect(this.saveCache).to.be.calledOnceWithExactly(
+          npmCachePaths,
+          cacheKey
+        )
+      })
+    })
+
+    context('finds package-lock.json', async function() {
+      const cacheKey = 'npm-platform-arch-hash-from-package-lock-file'
+
+      beforeEach(function() {
+        fs.existsSync.withArgs(npmShrinkwrapFilename).returns(false)
+
+        sandbox
+          .stub(hasha, 'fromFileSync')
+          .withArgs(packageLockFilename)
+          .returns('hash-from-package-lock-file')
+      })
+
+      it('uses package-lock.json and NPM', async function() {
+        await action.npmInstallAction()
+
+        expect(this.restoreCache).to.be.calledOnceWithExactly(
+          npmCachePaths,
+          cacheKey,
+          [cacheKey]
+        )
+        expect(this.exec).to.be.calledOnceWithExactly(
+          quote(pathToNpm),
+          ['ci'],
+          {
+            cwd
+          }
+        )
+        expect(this.saveCache).to.be.calledOnceWithExactly(
+          npmCachePaths,
+          cacheKey
+        )
+      })
     })
   })
 
