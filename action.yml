@@ -15,3 +15,6 @@ inputs:
   useLockFile:
     description: 'Option to enable or disable use of a lock file (package-lock.json/yarn.lock)'
     required: false
+  install-command:
+    description: 'Custom install command to use'
+    required: false

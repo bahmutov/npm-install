@@ -265,14 +265,17 @@ describe('action', () => {
       await action.npmInstallAction()
       expect(installInOneFolder).to.be.calledThrice
       expect(installInOneFolder).to.be.calledWithExactly({
+        installCommand: undefined,
         usePackageLock: true,
         workingDirectory: 'subfolder/foo'
       })
       expect(installInOneFolder).to.be.calledWithExactly({
+        installCommand: undefined,
         usePackageLock: true,
         workingDirectory: 'subfolder/bar'
       })
       expect(installInOneFolder).to.be.calledWithExactly({
+        installCommand: undefined,
         usePackageLock: true,
         workingDirectory: 'subfolder/baz'
       })
