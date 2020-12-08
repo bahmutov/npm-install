@@ -167,4 +167,30 @@ describe('install command', () => {
       )
     })
   })
+
+  context('using custom command', () => {
+    it('calls exec directly', async function() {
+      const opts = {
+        useYarn: true,
+        usePackageLock: true,
+        // only use relative path
+        workingDirectory: 'directory',
+        npmCacheFolder,
+        installCommand: 'my install command'
+      }
+
+      sandbox
+        .stub(path, 'resolve')
+        .withArgs('directory')
+        .returns(workingDirectory)
+
+      await action.utils.install(opts)
+      expect(
+        this.exec,
+        'to use the install command'
+      ).to.have.been.calledOnceWithExactly('my install command', [], {
+        cwd: workingDirectory
+      })
+    })
+  })
 })
