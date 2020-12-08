@@ -117,6 +117,18 @@ You can install just the production dependencies (without installing dev depende
     NODE_ENV: production
 ```
 
+### Custom install command
+
+You can use your own install command
+
+```yml
+- uses: bahmutov/npm-install@v1
+  with:
+    install-command: yarn --frozen-lockfile --silent
+```
+
+See [example-install-command.yml](./.github/workflows/example-install-command.yml)
+
 ## NPM
 
 If you are writing your own GitHub Action and would like to use this action as a utility function, import it and run it.
