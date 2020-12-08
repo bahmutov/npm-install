@@ -2888,8 +2888,16 @@ const install = (opts = {}) => {
     throw new Error('Missing npm cache folder to use')
   }
 
+  // set the NPM cache config in case there is custom npm install command
+  core.exportVariable('npm_config_cache', npmCacheFolder)
+
   const options = {
     cwd: path.resolve(opts.workingDirectory)
+  }
+
+  if (opts.installCommand) {
+    core.debug(`installing using custom command "${opts.installCommand}"`)
+    return exec.exec(opts.installCommand, [], options)
   }
 
   if (shouldUseYarn) {
@@ -2905,7 +2913,6 @@ const install = (opts = {}) => {
     })
   } else {
     console.log('installing NPM dependencies')
-    core.exportVariable('npm_config_cache', npmCacheFolder)
 
     return io.which('npm', true).then(npmPath => {
       console.log('npm at "%s"', npmPath)
@@ -2971,7 +2978,11 @@ const getCacheParams = ({
   return o
 }
 
-const installInOneFolder = ({ usePackageLock, workingDirectory }) => {
+const installInOneFolder = ({
+  usePackageLock,
+  workingDirectory,
+  installCommand
+}) => {
   core.debug(`usePackageLock? ${usePackageLock}`)
   core.debug(`working directory ${workingDirectory}`)
 
@@ -3000,7 +3011,8 @@ const installInOneFolder = ({ usePackageLock, workingDirectory }) => {
     useYarn: lockInfo.useYarn,
     usePackageLock,
     workingDirectory,
-    npmCacheFolder: NPM_CACHE_FOLDER
+    npmCacheFolder: NPM_CACHE_FOLDER,
+    installCommand
   }
 
   return api.utils.restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
@@ -3031,8 +3043,14 @@ const npmInstallAction = async () => {
 
   core.debug(`iterating over working ${workingDirectories.length} folder(s)`)
 
+  const installCommand = core.getInput('install-command')
+
   for (const workingDirectory of workingDirectories) {
-    await api.utils.installInOneFolder({ usePackageLock, workingDirectory })
+    await api.utils.installInOneFolder({
+      usePackageLock,
+      workingDirectory,
+      installCommand
+    })
   }
 }
 
