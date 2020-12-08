@@ -34,6 +34,7 @@ describe('install command', () => {
         .stub(path, 'resolve')
         .withArgs('directory')
         .returns(workingDirectory)
+      sandbox.stub(core, 'exportVariable')
 
       await action.utils.install(opts)
       expect(
@@ -44,6 +45,10 @@ describe('install command', () => {
         ['--frozen-lockfile'],
         { cwd: workingDirectory }
       )
+      expect(
+        core.exportVariable,
+        'npm_config_cache was set'
+      ).to.have.been.calledOnceWithExactly('npm_config_cache', npmCacheFolder)
     })
 
     it('and lock file', async function() {
@@ -179,6 +184,8 @@ describe('install command', () => {
         installCommand: 'my install command'
       }
 
+      sandbox.stub(core, 'exportVariable')
+
       sandbox
         .stub(path, 'resolve')
         .withArgs('directory')
@@ -191,6 +198,11 @@ describe('install command', () => {
       ).to.have.been.calledOnceWithExactly('my install command', [], {
         cwd: workingDirectory
       })
+
+      expect(
+        core.exportVariable,
+        'npm_config_cache was set'
+      ).to.have.been.calledOnceWithExactly('npm_config_cache', npmCacheFolder)
     })
   })
 })
