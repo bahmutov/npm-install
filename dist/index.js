@@ -2852,7 +2852,7 @@ const saveCachedNpm = npmCache => {
     .catch(err => {
       // don't throw an error if cache already exists, which may happen due to
       // race conditions
-      if (err.message.includes('Cache already exists')) {
+      if (err instanceof cache.ReserveCacheError) {
         console.warn(err.message)
         return -1
       }
