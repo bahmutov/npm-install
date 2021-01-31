@@ -15,6 +15,9 @@ inputs:
   useLockFile:
     description: 'Option to enable or disable use of a lock file (package-lock.json/yarn.lock)'
     required: false
+  useRollingCache:
+    description: Option to enable restoring a cache that doesn't exactly match the lockfile, and expire once a month to keep it from only growing larger
+    required: false
   install-command:
     description: 'Custom install command to use'
     required: false
