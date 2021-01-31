@@ -1,0 +1,13 @@
+name: example-rolling-cache
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bahmutov/npm-install@HEAD
+        with:
+          working-directory: examples/rolling-cache
+          useRollingCache: true
+      - run: npm t
+        working-directory: examples/rolling-cache

@@ -117,6 +117,7 @@ const install = (opts = {}) => {
 }
 
 const getPlatformAndArch = () => `${process.platform}-${process.arch}`
+const getNow = () => new Date()
 
 const getLockFilename = usePackageLock => workingDirectory => {
   const packageFilename = path.join(workingDirectory, 'package.json')
@@ -151,28 +152,47 @@ const getLockFilename = usePackageLock => workingDirectory => {
 
 const getCacheParams = ({
   useYarn,
+  useRollingCache,
   homeDirectory,
   npmCacheFolder,
   lockHash
 }) => {
   const platformAndArch = api.utils.getPlatformAndArch()
   core.debug(`platform and arch ${platformAndArch}`)
-  const o = {}
+  const primaryKeySegments = [platformAndArch]
+  let inputPaths, restoreKeys
+
   if (useYarn) {
-    o.inputPaths = [path.join(homeDirectory, '.cache', 'yarn')]
-    o.primaryKey = `yarn-${platformAndArch}-${lockHash}`
-    o.restoreKeys = [o.primaryKey]
+    inputPaths = [path.join(homeDirectory, '.cache', 'yarn')]
+    primaryKeySegments.unshift('yarn')
   } else {
-    o.inputPaths = [npmCacheFolder]
-    o.primaryKey = `npm-${platformAndArch}-${lockHash}`
-    o.restoreKeys = [o.primaryKey]
+    inputPaths = [npmCacheFolder]
+    primaryKeySegments.unshift('npm')
   }
-  return o
+
+  if (useRollingCache) {
+    const now = api.utils.getNow()
+    primaryKeySegments.push(
+      String(now.getFullYear()),
+      String(now.getMonth()),
+      lockHash
+    )
+    restoreKeys = [
+      primaryKeySegments.join('-'),
+      primaryKeySegments.slice(0, -1).join('-')
+    ]
+  } else {
+    primaryKeySegments.push(lockHash)
+    restoreKeys = [primaryKeySegments.join('-')]
+  }
+
+  return { primaryKey: primaryKeySegments.join('-'), inputPaths, restoreKeys }
 }
 
 const installInOneFolder = ({
   usePackageLock,
   workingDirectory,
+  useRollingCache,
   installCommand
 }) => {
   core.debug(`usePackageLock? ${usePackageLock}`)
@@ -195,6 +215,7 @@ const installInOneFolder = ({
   const NPM_CACHE = getCacheParams({
     useYarn: lockInfo.useYarn,
     homeDirectory,
+    useRollingCache,
     npmCacheFolder: NPM_CACHE_FOLDER,
     lockHash
   })
@@ -222,7 +243,9 @@ const installInOneFolder = ({
 
 const npmInstallAction = async () => {
   const usePackageLock = getInputBool('useLockFile', true)
+  const useRollingCache = getInputBool('useRollingCache', false)
   core.debug(`usePackageLock? ${usePackageLock}`)
+  core.debug(`useRollingCache? ${useRollingCache}`)
 
   // Note: working directory for "actions/exec" should be absolute
 
@@ -240,6 +263,7 @@ const npmInstallAction = async () => {
   for (const workingDirectory of workingDirectories) {
     await api.utils.installInOneFolder({
       usePackageLock,
+      useRollingCache,
       workingDirectory,
       installCommand
     })
@@ -257,6 +281,7 @@ const api = {
     install,
     saveCachedNpm,
     getPlatformAndArch,
+    getNow,
     installInOneFolder
   }
 }

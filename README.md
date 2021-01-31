@@ -107,6 +107,18 @@ By default, this action will use a lock file like `package-lock.json`, `npm-shri
     useLockFile: false
 ```
 
+### Use time-based rolling cache
+
+By default, yarn and npm dependencies will be cached according to the exact hash of the lockfile (if enabled) or the `package.json`. This will cause cache misses when the dependencies change, which can be slower than re-installing for big projects. To re-use the cache across runs with different lockfiles/dependencies, you can enable the `useRollingCache` option, which will restore the cache from more keys. It will expire the cache once a month to keep it from growing too large, see the Cache Snowballing & Rolling Cache expiry below.
+
+```yml
+- uses: bahmutov/npm-install@v1
+  with:
+    useRollingCache: true
+```
+
+`useRollingCache` is defaulted to false.
+
 ### Production dependencies
 
 You can install just the production dependencies (without installing dev dependencies) by setting an environment variable `NODE_ENV` variable
@@ -155,6 +167,14 @@ Using Mocha and Sinon.js following the guide [How to set up Mocha with Sinon.js]
 
 - all environment inputs are done inside the action, so they can be stubbed and controlled during tests
 - there are separate workflows in [.github/workflows](.github/workflows) that match examples. Each workflow uses this action to install dependencies
+
+## Cache Snowballing & Rolling Cache expiry
+
+By default, this action will cache dependencies using an exacty hashs of the lock file (like `package-lock.json`, `npm-shrinkwrap.json` or `yarn.lock`). If you change any dependencies, there will be a cache miss. This is the default cache key strategy to avoid unbounded growth of the cache, as if you don't expire the cache, it will continue being added to. See [this post](https://glebbahmutov.com/blog/do-not-let-npm-cache-snowball/) for more details on this issue.
+
+To get better cache hit rates without the cache size snowballing, you can turn on this action's `useRollingCache` option, which will allow old caches to be re-used when your dependencies change, at the expense of some snowballing. Instead of letting the cache grow forever, this action resets it every month by including the current month in the cache key.
+
+The rule of thumb is this: if re-installing your dependencies doesn't take very long, you can avoid superfluous cache restores by keeping `useRollingCache` off. This is the recommended setup for small projects. For big projects where installing the dependencies takes a long time, and cache restores are faster, `useRollingCache` will provide a performance improvement.
 
 ## Links
 

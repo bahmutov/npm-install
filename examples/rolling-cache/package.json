@@ -1,0 +1,15 @@
+{
+  "name": "rolling-cache-example",
+  "version": "1.0.0",
+  "description": "installing using rolling cache example",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ."
+  },
+  "author": "",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "chalk": "3.0.0"
+  }
+}
