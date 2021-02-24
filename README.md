@@ -141,6 +141,14 @@ You can use your own install command
 
 See [example-install-command.yml](./.github/workflows/example-install-command.yml)
 
+### External examples
+
+<!-- prettier-ignore-start -->
+Name | Description
+--- | ---
+[npm-install-example](https://github.com/bahmutov/npm-install-example) | Shows how to use this action
+<!-- prettier-ignore-end -->
+
 ## NPM
 
 If you are writing your own GitHub Action and would like to use this action as a utility function, import it and run it.
