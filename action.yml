@@ -3,7 +3,7 @@ name: 'NPM or Yarn install with caching'
 description: 'Install npm dependencies with caching'
 author: 'Gleb Bahmutov'
 runs:
-  using: 'node12'
+  using: 'node14'
   main: 'dist/index.js'
 branding:
   color: 'yellow'
