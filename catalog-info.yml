@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: npm-install
+  description: |
+    GitHub Action for install npm dependencies with caching without any configuration
+  annotations:
+    github.com/project-slug: Tradeshift/npm-install
+  tags:
+    - github-action
+    - nodejs
+    - fork
+spec:
+  type: library
+  owner: developer-productivity
+  lifecycle: production
