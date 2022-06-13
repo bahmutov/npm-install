@@ -338,4 +338,71 @@ describe('action', () => {
       )
     })
   })
+
+  context('cache failure', function() {
+    const pathToNpm = '/path/to/npm'
+    beforeEach(() => {
+      sandbox
+        .stub(core, 'getInput')
+        .withArgs('useLockFile')
+        .returns('0')
+
+      sandbox
+        .stub(io, 'which')
+        .withArgs('npm')
+        .resolves(pathToNpm)
+
+      const filename = path.join(cwd, 'package.json')
+      sandbox
+        .stub(hasha, 'fromFileSync')
+        .withArgs(filename)
+        .returns('hash-from-package-json')
+    })
+
+    it('handles restoreCache failure', async function() {
+      this.restoreCache = sandbox
+        .stub(cache, 'restoreCache')
+        .rejects(
+          new cache.ReserveCacheError(
+            'getCacheEntry failed: Cache service responded with 503'
+          )
+        )
+      const saveCache = sandbox.stub(utils, 'saveCachedNpm')
+      await action.npmInstallAction()
+
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToNpm),
+        ['install'],
+        {
+          cwd
+        }
+      )
+
+      expect(saveCache, 'cache was hit').to.have.been.calledOnceWithExactly({
+        inputPaths: ['/home/path/for/test/user/.npm'],
+        primaryKey: 'npm-platform-arch-hash-from-package-json',
+        restoreKeys: ['npm-platform-arch-hash-from-package-json']
+      })
+    })
+
+    it('handles saveCache failure', async function() {
+      this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(false)
+      this.saveCache = sandbox
+        .stub(cache, 'saveCache')
+        .rejects(
+          new cache.ReserveCacheError(
+            'getCacheEntry failed: Cache service responded with 503'
+          )
+        )
+      await action.npmInstallAction()
+
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToNpm),
+        ['install'],
+        {
+          cwd
+        }
+      )
+    })
+  })
 })
