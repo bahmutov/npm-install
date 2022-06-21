@@ -13,6 +13,7 @@ Example | Status
 [Yarn](.github/workflows/example-yarn.yml) | ![yarn example](https://github.com/bahmutov/npm-install/workflows/example-yarn/badge.svg?branch=master)
 [without lock file](.github/workflows/example-without-lock-file.yml) | ![without lockfile example](https://github.com/bahmutov/npm-install/workflows/example-without-lock-file/badge.svg?branch=master)
 [subfolders](.github/workflows/example-subfolders.yml) | ![subfolders example](https://github.com/bahmutov/npm-install/workflows/example-subfolders/badge.svg?branch=master)
+[Node version](.github/workflows/example-node-version.yml) | ![Node version example](https://github.com/bahmutov/npm-install/workflows/example-node-version/badge.svg?branch=master)
 <!-- prettier-ignore-end -->
 
 ## Examples
