@@ -1,0 +1,21 @@
+name: example-node-version
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      # pick the Node version to use and install it
+      # https://github.com/actions/setup-node
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      # during development we use the latest version of this action
+      # in the real world, the user should use
+      # - uses: bahmutov/npm-install@v1
+      - uses: bahmutov/npm-install@HEAD
+        with:
+          working-directory: examples/basic
+      - run: |
+          node --version
+          npm --version
