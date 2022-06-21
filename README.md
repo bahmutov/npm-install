@@ -141,6 +141,22 @@ You can use your own install command
 
 See [example-install-command.yml](./.github/workflows/example-install-command.yml)
 
+### Node version
+
+If you need to use a specific Node version, use the []() before installing the dependencies.
+
+```yml
+- uses: actions/checkout@v3
+  # pick the Node version to use and install it
+  # https://github.com/actions/setup-node
+  - uses: actions/setup-node@v3
+    with:
+      node-version: 16
+  - uses: bahmutov/npm-install@v1
+```
+
+See [example-node-version.yml](./.github/workflows/example-node-version.yml)
+
 ### External examples
 
 <!-- prettier-ignore-start -->
