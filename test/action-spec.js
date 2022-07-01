@@ -11,6 +11,8 @@ const cache = require('@actions/cache')
 const action = require('../index')
 const utils = action.utils
 
+const isWindows = os.platform().includes('win')
+
 describe('action', () => {
   // by resolving we normalize the folder on Linux and Windows CI
   const cwd = path.resolve('/path/to/mock/cwd')
@@ -378,11 +380,18 @@ describe('action', () => {
         }
       )
 
-      expect(saveCache, 'cache was hit').to.have.been.calledOnceWithExactly({
+      const nonWindowsFailure = {
+        inputPaths: ['\\home\\path\\for\\test\\user\\.npm'],
+        primaryKey: 'npm-platform-arch-hash-from-package-json',
+        restoreKeys: ['npm-platform-arch-hash-from-package-json']
+      }
+      const windowsFailure = {
         inputPaths: ['/home/path/for/test/user/.npm'],
         primaryKey: 'npm-platform-arch-hash-from-package-json',
         restoreKeys: ['npm-platform-arch-hash-from-package-json']
-      })
+      }
+      const arg = isWindows ? windowsFailure : nonWindowsFailure
+      expect(saveCache, 'cache was hit').to.have.been.calledOnceWithExactly(arg)
     })
 
     it('handles saveCache failure', async function() {
