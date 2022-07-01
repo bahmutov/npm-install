@@ -29,11 +29,21 @@ const getInputBool = (name, defaultValue = false) => {
 
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
-  return cache.restoreCache(
-    npmCache.inputPaths,
-    npmCache.primaryKey,
-    npmCache.restoreKeys
-  )
+  return cache
+    .restoreCache(
+      npmCache.inputPaths,
+      npmCache.primaryKey,
+      npmCache.restoreKeys
+    )
+    .then(cache => {
+      console.log('npm cache hit', cache)
+      return cache
+    })
+    .catch(e => {
+      console.warn(
+        `caught error ${e} retrieving cache, installing from scratch`
+      )
+    })
 }
 
 const saveCachedNpm = npmCache => {
@@ -48,8 +58,9 @@ const saveCachedNpm = npmCache => {
         console.warn(err.message)
         return -1
       }
-      // otherwise re-throw
-      throw err
+
+      // do not rethrow here or github actions will break (https://github.com/bahmutov/npm-install/issues/142)
+      console.warn(`saving npm cache failed with ${err}, continuing...`)
     })
 }
 
@@ -229,8 +240,6 @@ const installInOneFolder = ({
   }
 
   return api.utils.restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
-    console.log('npm cache hit', npmCacheHit)
-
     return api.utils.install(opts).then(() => {
       if (npmCacheHit) {
         return
