@@ -1,0 +1,11 @@
+# See https://github.com/krzema12/github-actions-typing
+
+inputs:
+  working-directory:
+    type: string
+  useLockFile:
+    type: boolean
+  useRollingCache:
+    type: boolean
+  install-command:
+    type: string
