@@ -4,7 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: bahmutov/npm-install@HEAD
         with:
           working-directory: examples/without-lock-file

@@ -4,7 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # during development we use the latest version of this action
       # in the real world, the user should use
       # - uses: bahmutov/npm-install@v1

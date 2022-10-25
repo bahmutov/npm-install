@@ -10,7 +10,7 @@ jobs:
     name: Build and test on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # caching NPM dependencies
       # https://github.com/actions/cache/blob/master/examples.md#node---npm
@@ -39,7 +39,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - run: echo $GITHUB_SHA
 

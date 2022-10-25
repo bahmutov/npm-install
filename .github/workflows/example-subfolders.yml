@@ -8,7 +8,7 @@ jobs:
         os: [ubuntu-20.04, windows-latest, macOS-latest]
     name: Test on ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # typically we would use a SHA or branch name
       # of an action like
       # - uses: bahmutov/npm-install@v1
@@ -34,7 +34,7 @@ jobs:
         os: [ubuntu-20.04, windows-latest, macOS-latest]
     name: Test on ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ./
         with:
           # specify a directory per line

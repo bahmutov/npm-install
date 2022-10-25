@@ -16,11 +16,12 @@
     "activityBar.activeBackground": "#fbed80",
     "sash.hoverBorder": "#fbed80",
     "statusBarItem.remoteBackground": "#f9e64f",
-    "statusBarItem.remoteForeground": "#15202b"
+    "statusBarItem.remoteForeground": "#15202b",
+    "commandCenter.border": "#15202b99"
   },
   "peacock.color": "#f9e64f",
   "editor.formatOnPaste": false,
   "editor.formatOnType": false,
   "editor.formatOnSave": true,
-  "workbench.colorTheme": "Winter is Coming (Light)"
+  "workbench.colorTheme": "FireFly Pro Bright"
 }
