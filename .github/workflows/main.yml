@@ -14,7 +14,7 @@ jobs:
 
       # caching NPM dependencies
       # https://github.com/actions/cache/blob/master/examples.md#node---npm
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
