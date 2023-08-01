@@ -31,7 +31,7 @@ const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
   return cache
     .restoreCache(
-      npmCache.inputPaths,
+      npmCache.inputPaths.slice(), // Copy inputPaths, to work arround bug reported in https://github.com/actions/toolkit/pull/1378
       npmCache.primaryKey,
       npmCache.restoreKeys
     )
@@ -50,7 +50,10 @@ const saveCachedNpm = npmCache => {
   console.log('saving NPM modules')
 
   return cache
-    .saveCache(npmCache.inputPaths, npmCache.primaryKey)
+    .saveCache(
+      npmCache.inputPaths.slice(), // Copy inputPaths, to work arround bug reported in https://github.com/actions/toolkit/pull/1378
+      npmCache.primaryKey
+    )
     .catch(err => {
       // don't throw an error if cache already exists, which may happen due to
       // race conditions
