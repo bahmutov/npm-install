@@ -144,7 +144,7 @@ See [example-install-command.yml](./.github/workflows/example-install-command.ym
 
 ### Node version
 
-If you need to use a specific Node version, use the []() before installing the dependencies.
+If you need to use a specific Node version, use the [actions/setup-node](https://github.com/actions/setup-node) before installing the dependencies.
 
 ```yml
 - uses: actions/checkout@v3
@@ -152,7 +152,7 @@ If you need to use a specific Node version, use the []() before installing the d
   # https://github.com/actions/setup-node
   - uses: actions/setup-node@v3
     with:
-      node-version: 16
+      node-version: 18
   - uses: bahmutov/npm-install@v1
 ```
 

@@ -9,7 +9,7 @@ jobs:
       # https://github.com/actions/setup-node
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       # during development we use the latest version of this action
       # in the real world, the user should use
       # - uses: bahmutov/npm-install@v1
