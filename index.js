@@ -29,14 +29,21 @@ const getInputBool = (name, defaultValue = false) => {
 
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
+  console.log('cache key %s', npmCache.primaryKey)
+  console.log('restore keys %o', npmCache.restoreKeys)
+  console.log('input paths %o', npmCache.inputPaths)
   return cache
     .restoreCache(
-      npmCache.inputPaths.slice(), // Copy inputPaths, to work arround bug reported in https://github.com/actions/toolkit/pull/1378
+      npmCache.inputPaths,
       npmCache.primaryKey,
       npmCache.restoreKeys
     )
     .then(cache => {
-      console.log('npm cache hit', cache)
+      if (typeof cache === 'undefined') {
+        console.log('npm cache miss')
+      } else {
+        console.log('npm cache hit key', cache)
+      }
       return cache
     })
     .catch(e => {
