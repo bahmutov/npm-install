@@ -47,13 +47,11 @@ const restoreCachedNpm = npmCache => {
 }
 
 const saveCachedNpm = npmCache => {
-  console.log('saving NPM modules')
+  console.log('saving NPM modules under key %s', npmCache.primaryKey)
+  console.log('input paths: %o', npmCache.inputPaths)
 
   return cache
-    .saveCache(
-      npmCache.inputPaths.slice(), // Copy inputPaths, to work arround bug reported in https://github.com/actions/toolkit/pull/1378
-      npmCache.primaryKey
-    )
+    .saveCache(npmCache.inputPaths, npmCache.primaryKey)
     .catch(err => {
       // don't throw an error if cache already exists, which may happen due to
       // race conditions
@@ -64,6 +62,8 @@ const saveCachedNpm = npmCache => {
 
       // do not rethrow here or github actions will break (https://github.com/bahmutov/npm-install/issues/142)
       console.warn(`saving npm cache failed with ${err}, continuing...`)
+      console.warn('cache key %s', npmCache.primaryKey)
+      console.warn('input paths %o', npmCache.inputPaths)
     })
 }
 
