@@ -23,7 +23,7 @@ describe('action', () => {
     sandbox.stub(os, 'homedir').returns(homedir)
     sandbox.stub(process, 'cwd').returns(cwd)
     sandbox.stub(utils, 'getPlatformAndArch').returns('platform-arch')
-    sandbox.stub(utils, 'getNow').returns(new Date(2020, 01, 01))
+    sandbox.stub(utils, 'getNow').returns(new Date(2020, 0o1, 0o1))
     // always stub "core.exportVariable" to avoid polluting actual workflow
     sandbox.stub(core, 'exportVariable').returns()
   })
@@ -80,7 +80,7 @@ describe('action', () => {
     })
   })
 
-  context('does not find Yarn', function() {
+  context('does not find Yarn and uses NPM', function() {
     const yarnFilename = path.join(cwd, 'yarn.lock')
     const npmShrinkwrapFilename = path.join(cwd, 'npm-shrinkwrap.json')
     const packageLockFilename = path.join(cwd, 'package-lock.json')
@@ -268,18 +268,21 @@ describe('action', () => {
       await action.npmInstallAction()
       expect(installInOneFolder).to.be.calledThrice
       expect(installInOneFolder).to.be.calledWithExactly({
+        cachePrefix: '',
         installCommand: undefined,
         usePackageLock: true,
         useRollingCache: false,
         workingDirectory: 'subfolder/foo'
       })
       expect(installInOneFolder).to.be.calledWithExactly({
+        cachePrefix: '',
         installCommand: undefined,
         usePackageLock: true,
         useRollingCache: false,
         workingDirectory: 'subfolder/bar'
       })
       expect(installInOneFolder).to.be.calledWithExactly({
+        cachePrefix: '',
         installCommand: undefined,
         usePackageLock: true,
         useRollingCache: false,
@@ -415,6 +418,61 @@ describe('action', () => {
         {
           cwd
         }
+      )
+    })
+  })
+
+  context('with cachePrefix', function() {
+    const pathToYarn = '/path/to/yarn'
+    const yarnFilename = path.join(cwd, 'yarn.lock')
+    const yarnCachePaths = [path.join(homedir, '.cache', 'yarn')]
+    const cacheKey =
+      'yarn-my-cache-prefix-platform-arch-2020-1-hash-from-yarn-lock-file'
+
+    beforeEach(function() {
+      const stub = sandbox.stub(core, 'getInput')
+      stub.withArgs('cache-key-prefix').returns('my-cache-prefix')
+      stub.withArgs('useRollingCache').returns('1')
+      stub.withArgs('useLockFile').returns()
+      sandbox
+        .stub(fs, 'existsSync')
+        .withArgs(yarnFilename)
+        .returns(true)
+
+      sandbox
+        .stub(io, 'which')
+        .withArgs('yarn')
+        .resolves(pathToYarn)
+
+      sandbox
+        .stub(hasha, 'fromFileSync')
+        .withArgs(yarnFilename)
+        .returns('hash-from-yarn-lock-file')
+
+      const cacheHit = false
+      this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
+      this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
+    })
+
+    it('finds yarn and uses lock file', async function() {
+      await action.npmInstallAction()
+
+      expect(this.restoreCache).to.be.calledOnceWithExactly(
+        yarnCachePaths,
+        cacheKey,
+        [
+          'yarn-my-cache-prefix-platform-arch-2020-1-hash-from-yarn-lock-file',
+          'yarn-my-cache-prefix-platform-arch-2020-1'
+        ]
+      )
+      expect(this.exec).to.be.calledOnceWithExactly(
+        quote(pathToYarn),
+        ['--frozen-lockfile'],
+        { cwd }
+      )
+      expect(this.saveCache).to.be.calledOnceWithExactly(
+        yarnCachePaths,
+        cacheKey
       )
     })
   })

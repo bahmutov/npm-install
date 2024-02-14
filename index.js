@@ -176,11 +176,17 @@ const getCacheParams = ({
   useRollingCache,
   homeDirectory,
   npmCacheFolder,
-  lockHash
+  lockHash,
+  cachePrefix
 }) => {
   const platformAndArch = api.utils.getPlatformAndArch()
   core.debug(`platform and arch ${platformAndArch}`)
   const primaryKeySegments = [platformAndArch]
+
+  if (cachePrefix) {
+    primaryKeySegments.unshift(cachePrefix)
+  }
+
   let inputPaths, restoreKeys
 
   if (useYarn) {
@@ -214,7 +220,8 @@ const installInOneFolder = ({
   usePackageLock,
   workingDirectory,
   useRollingCache,
-  installCommand
+  installCommand,
+  cachePrefix
 }) => {
   core.debug(`usePackageLock? ${usePackageLock}`)
   core.debug(`working directory ${workingDirectory}`)
@@ -246,7 +253,8 @@ const installInOneFolder = ({
     homeDirectory,
     useRollingCache,
     npmCacheFolder: NPM_CACHE_FOLDER,
-    lockHash
+    lockHash,
+    cachePrefix
   })
 
   const opts = {
@@ -271,8 +279,10 @@ const installInOneFolder = ({
 const npmInstallAction = async () => {
   const usePackageLock = getInputBool('useLockFile', true)
   const useRollingCache = getInputBool('useRollingCache', false)
+  const cachePrefix = core.getInput('cache-key-prefix') || ''
   core.debug(`usePackageLock? ${usePackageLock}`)
   core.debug(`useRollingCache? ${useRollingCache}`)
+  core.debug(`cache prefix "${cachePrefix}"`)
 
   // Note: working directory for "actions/exec" should be absolute
 
@@ -292,7 +302,8 @@ const npmInstallAction = async () => {
       usePackageLock,
       useRollingCache,
       workingDirectory,
-      installCommand
+      installCommand,
+      cachePrefix
     })
   }
 }

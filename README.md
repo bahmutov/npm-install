@@ -142,6 +142,30 @@ You can use your own install command
 
 See [example-install-command.yml](./.github/workflows/example-install-command.yml)
 
+### Add cache prefix
+
+If you are installing different individual tools, you might want to have different caches. You can insert custom cache prefix strings into the cache keys. For example, let's install two different tools, each cache will be separate.
+
+```yml
+- name: Install tool A
+  uses: bahmutov/npm-install@v1
+  with:
+    # use just package.json checksum
+    useLockFile: false
+    install-command: 'npm install tool-a'
+    cache-key-prefix: tool-a
+
+- name: Install tool B
+  uses: bahmutov/npm-install@v1
+  with:
+    # use just package.json checksum
+    useLockFile: false
+    install-command: 'npm install tool-b'
+    cache-key-prefix: tool-b
+```
+
+The first cache will have key `npm-tool-a-...` and the second cache will have key `npm-tool-b-...`
+
 ### Node version
 
 If you need to use a specific Node version, use the [actions/setup-node](https://github.com/actions/setup-node) before installing the dependencies.
