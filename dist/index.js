@@ -236,12 +236,20 @@ const installInOneFolder = ({
   core.debug(`lock filename ${lockInfo.lockFilename}`)
   core.debug(`file hash ${lockHash}`)
 
+  // if the user provided a custom command like "npm ...", then we cannot
+  // use Yarn cache paths
+  let useYarn = lockInfo.useYarn
+  if (useYarn && installCommand && installCommand.startsWith('npm')) {
+    core.debug('using NPM command, not using Yarn cache paths')
+    useYarn = false
+  }
+
   // enforce the same NPM cache folder across different operating systems
   const homeDirectory = os.homedir()
   const NPM_CACHE_FOLDER = path.join(homeDirectory, '.npm')
 
   const NPM_CACHE = getCacheParams({
-    useYarn: lockInfo.useYarn,
+    useYarn,
     homeDirectory,
     useRollingCache,
     npmCacheFolder: NPM_CACHE_FOLDER,
@@ -249,7 +257,7 @@ const installInOneFolder = ({
   })
 
   const opts = {
-    useYarn: lockInfo.useYarn,
+    useYarn,
     usePackageLock,
     workingDirectory,
     npmCacheFolder: NPM_CACHE_FOLDER,
