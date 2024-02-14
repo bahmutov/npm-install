@@ -23,7 +23,7 @@ describe('action', () => {
     sandbox.stub(os, 'homedir').returns(homedir)
     sandbox.stub(process, 'cwd').returns(cwd)
     sandbox.stub(utils, 'getPlatformAndArch').returns('platform-arch')
-    sandbox.stub(utils, 'getNow').returns(new Date(2020, 01, 01))
+    sandbox.stub(utils, 'getNow').returns(new Date(2020, 0o1, 0o1))
     // always stub "core.exportVariable" to avoid polluting actual workflow
     sandbox.stub(core, 'exportVariable').returns()
   })
@@ -268,18 +268,21 @@ describe('action', () => {
       await action.npmInstallAction()
       expect(installInOneFolder).to.be.calledThrice
       expect(installInOneFolder).to.be.calledWithExactly({
+        cachePrefix: '',
         installCommand: undefined,
         usePackageLock: true,
         useRollingCache: false,
         workingDirectory: 'subfolder/foo'
       })
       expect(installInOneFolder).to.be.calledWithExactly({
+        cachePrefix: '',
         installCommand: undefined,
         usePackageLock: true,
         useRollingCache: false,
         workingDirectory: 'subfolder/bar'
       })
       expect(installInOneFolder).to.be.calledWithExactly({
+        cachePrefix: '',
         installCommand: undefined,
         usePackageLock: true,
         useRollingCache: false,

@@ -21,3 +21,6 @@ inputs:
   install-command:
     description: 'Custom install command to use'
     required: false
+  cache-key-prefix:
+    description: 'Prefix the cache name with this string'
+    required: false
