@@ -335,6 +335,7 @@ const npmInstallAction = async () => {
     // due to retries or timeouts. We know that if we got here
     // that all promises that we care about have successfully
     // resolved, so simply exit with success.
+    // From: https://github.com/actions/cache/blob/a2ed59d39b352305bdd2f628719a53b2cc4f9613/src/saveImpl.ts#L96
     process.exit(0)
   } catch (err) {
     console.error(err)
