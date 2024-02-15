@@ -18,6 +18,7 @@ jobs:
           install-command: 'npm install chalk'
           cache-key-prefix: chalk5
         env:
+          ACTIONS_RUNNER_DEBUG: true
           ACTIONS_STEP_DEBUG: true
 
   # cache using https://github.com/actions/cache
@@ -31,6 +32,7 @@ jobs:
           path: ~/.npm
           key: chalk-v1
         env:
+          ACTIONS_RUNNER_DEBUG: true
           ACTIONS_STEP_DEBUG: true
       - name: Install just chalk
         run: npm install chalk
