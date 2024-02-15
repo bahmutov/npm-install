@@ -64,8 +64,17 @@ const saveCachedNpm = npmCache => {
   console.log('saving NPM modules under key %s', npmCache.primaryKey)
   console.log('input paths: %o', npmCache.inputPaths)
 
+  const started = +new Date()
   return cache
     .saveCache(npmCache.inputPaths, npmCache.primaryKey)
+    .then(() => {
+      const finished = +new Date()
+      console.log(
+        'npm cache saved for key %s, took %dms',
+        npmCache.primaryKey,
+        finished - started
+      )
+    })
     .catch(err => {
       // don't throw an error if cache already exists, which may happen due to
       // race conditions
@@ -304,14 +313,34 @@ const npmInstallAction = async () => {
 
   const installCommand = core.getInput('install-command')
 
-  for (const workingDirectory of workingDirectories) {
-    await api.utils.installInOneFolder({
-      usePackageLock,
-      useRollingCache,
-      workingDirectory,
-      installCommand,
-      cachePrefix
-    })
+  try {
+    for (const workingDirectory of workingDirectories) {
+      const started = +new Date()
+      await api.utils.installInOneFolder({
+        usePackageLock,
+        useRollingCache,
+        workingDirectory,
+        installCommand,
+        cachePrefix
+      })
+
+      const finished = +new Date()
+      core.debug(
+        `installing in ${workingDirectory} took ${finished - started}ms`
+      )
+    }
+
+    // node will stay alive if any promises are not resolved,
+    // which is a possibility if HTTP requests are dangling
+    // due to retries or timeouts. We know that if we got here
+    // that all promises that we care about have successfully
+    // resolved, so simply exit with success.
+    // From: https://github.com/actions/cache/blob/a2ed59d39b352305bdd2f628719a53b2cc4f9613/src/saveImpl.ts#L96
+    process.exit(0)
+  } catch (err) {
+    console.error(err)
+    core.setFailed(err.message)
+    process.exit(1)
   }
 }
 
@@ -336,9 +365,12 @@ module.exports = api
 // @ts-ignore
 if (!module.parent) {
   console.log('running npm-install GitHub Action')
+  const started = +new Date()
   npmInstallAction()
     .then(() => {
       console.log('all done, exiting')
+      const finished = +new Date()
+      core.debug(`npm-install took ${finished - started}ms`)
     })
     .catch(error => {
       console.log(error)

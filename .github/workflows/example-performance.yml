@@ -1,0 +1,27 @@
+name: example-performance
+on: [pull_request]
+jobs:
+  # cache using npm-install
+  cache1:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      # look at fast this action installs a single dependency
+      - uses: bahmutov/npm-install@HEAD
+        with:
+          working-directory: examples/basic
+          install-command: 'npm install chalk'
+          cache-key-prefix: chalk8
+
+  # cache using https://github.com/actions/cache
+  cache2:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Caching
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: chalk-v2
+      - name: Install just chalk
+        run: npm install chalk
