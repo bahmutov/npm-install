@@ -5,3 +5,4 @@ yarn.lock
 .gitignore
 .prettierignore
 .npmrc
+.nvmrc

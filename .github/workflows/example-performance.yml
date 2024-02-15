@@ -1,7 +1,8 @@
 name: example-performance
 on: [pull_request]
 jobs:
-  test:
+  # cache using npm-install
+  cache1:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
@@ -13,3 +14,18 @@ jobs:
           cache-key-prefix: chalk2
         env:
           ACTIONS_STEP_DEBUG: true
+
+  # cache using https://github.com/actions/cache
+  cache2:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: install chalk
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: chalk-v1
+        env:
+          ACTIONS_STEP_DEBUG: true
+      - name: Install just chalk
+        run: npm install chalk
