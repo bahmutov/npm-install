@@ -275,8 +275,7 @@ const installInOneFolder = ({
   }
 
   return api.utils.restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
-    // return api.utils.install(opts).then(() => {
-    return Promise.resolve().then(() => {
+    return api.utils.install(opts).then(() => {
       if (npmCacheHit) {
         return
       }
@@ -307,17 +306,33 @@ const npmInstallAction = async () => {
 
   const installCommand = core.getInput('install-command')
 
-  for (const workingDirectory of workingDirectories) {
-    const started = +new Date()
-    await api.utils.installInOneFolder({
-      usePackageLock,
-      useRollingCache,
-      workingDirectory,
-      installCommand,
-      cachePrefix
-    })
-    const finished = +new Date()
-    core.debug(`installing in ${workingDirectory} took ${finished - started}ms`)
+  try {
+    for (const workingDirectory of workingDirectories) {
+      const started = +new Date()
+      await api.utils.installInOneFolder({
+        usePackageLock,
+        useRollingCache,
+        workingDirectory,
+        installCommand,
+        cachePrefix
+      })
+
+      const finished = +new Date()
+      core.debug(
+        `installing in ${workingDirectory} took ${finished - started}ms`
+      )
+    }
+
+    // node will stay alive if any promises are not resolved,
+    // which is a possibility if HTTP requests are dangling
+    // due to retries or timeouts. We know that if we got here
+    // that all promises that we care about have successfully
+    // resolved, so simply exit with success.
+    process.exit(0)
+  } catch (err) {
+    console.error(err)
+    core.setFailed(err.message)
+    process.exit(1)
   }
 }
 

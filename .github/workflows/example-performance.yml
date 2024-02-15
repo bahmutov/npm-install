@@ -10,13 +10,12 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 20
-      - run: npm install chalk
       # look at fast this action installs a single dependency
       - uses: bahmutov/npm-install@performance
         with:
           working-directory: examples/basic
           install-command: 'npm install chalk'
-          cache-key-prefix: chalk6
+          cache-key-prefix: chalk7
         env:
           ACTIONS_RUNNER_DEBUG: true
           ACTIONS_STEP_DEBUG: true
