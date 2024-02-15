@@ -275,7 +275,8 @@ const installInOneFolder = ({
   }
 
   return api.utils.restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
-    return api.utils.install(opts).then(() => {
+    // return api.utils.install(opts).then(() => {
+    return Promise.resolve().then(() => {
       if (npmCacheHit) {
         return
       }
