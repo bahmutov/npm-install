@@ -306,13 +306,13 @@ const npmInstallAction = async () => {
 
   for (const workingDirectory of workingDirectories) {
     const started = +new Date()
-    await api.utils.installInOneFolder({
-      usePackageLock,
-      useRollingCache,
-      workingDirectory,
-      installCommand,
-      cachePrefix
-    })
+    // await api.utils.installInOneFolder({
+    //   usePackageLock,
+    //   useRollingCache,
+    //   workingDirectory,
+    //   installCommand,
+    //   cachePrefix
+    // })
     const finished = +new Date()
     core.debug(`installing in ${workingDirectory} took ${finished - started}ms`)
   }
