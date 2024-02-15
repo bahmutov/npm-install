@@ -64,8 +64,17 @@ const saveCachedNpm = npmCache => {
   console.log('saving NPM modules under key %s', npmCache.primaryKey)
   console.log('input paths: %o', npmCache.inputPaths)
 
+  const started = +new Date()
   return cache
     .saveCache(npmCache.inputPaths, npmCache.primaryKey)
+    .then(() => {
+      const finished = +new Date()
+      console.log(
+        'npm cache saved for key %s, took %dms',
+        npmCache.primaryKey,
+        finished - started
+      )
+    })
     .catch(err => {
       // don't throw an error if cache already exists, which may happen due to
       // race conditions
@@ -278,7 +287,7 @@ const installInOneFolder = ({
         return
       }
 
-      // return api.utils.saveCachedNpm(NPM_CACHE)
+      return api.utils.saveCachedNpm(NPM_CACHE)
     })
   })
 }
