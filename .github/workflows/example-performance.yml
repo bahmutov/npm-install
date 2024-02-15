@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # look at fast this action installs a single dependency
-      - uses: bahmutov/npm-install@HEAD
+      - uses: bahmutov/npm-install@performance
         with:
           working-directory: examples/basic
           install-command: 'npm install chalk'
