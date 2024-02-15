@@ -1,0 +1,15 @@
+name: example-performance
+on: [pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      # look at fast this action installs a single dependency
+      - uses: bahmutov/npm-install@HEAD
+        with:
+          working-directory: examples/basic
+          install-command: 'npm install chalk'
+          cache-key-prefix: chalk
+        env:
+          ACTIONS_STEP_DEBUG: true

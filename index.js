@@ -298,6 +298,7 @@ const npmInstallAction = async () => {
   const installCommand = core.getInput('install-command')
 
   for (const workingDirectory of workingDirectories) {
+    const started = +new Date()
     await api.utils.installInOneFolder({
       usePackageLock,
       useRollingCache,
@@ -305,6 +306,8 @@ const npmInstallAction = async () => {
       installCommand,
       cachePrefix
     })
+    const finished = +new Date()
+    core.debug(`installing in ${workingDirectory} took ${finished - started}ms`)
   }
 }
 
@@ -329,9 +332,12 @@ module.exports = api
 // @ts-ignore
 if (!module.parent) {
   console.log('running npm-install GitHub Action')
+  const started = +new Date()
   npmInstallAction()
     .then(() => {
       console.log('all done, exiting')
+      const finished = +new Date()
+      core.debug(`npm-install took ${finished - started}ms`)
     })
     .catch(error => {
       console.log(error)
