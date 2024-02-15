@@ -3,16 +3,20 @@ on: [pull_request]
 jobs:
   # cache using npm-install
   cache1:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      # setup Node 20
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 20
       - run: npm install chalk
       # look at fast this action installs a single dependency
       - uses: bahmutov/npm-install@performance
         with:
           working-directory: examples/basic
           install-command: 'npm install chalk'
-          cache-key-prefix: chalk4
+          cache-key-prefix: chalk5
         env:
           ACTIONS_STEP_DEBUG: true
 
