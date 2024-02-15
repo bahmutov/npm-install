@@ -16,7 +16,7 @@ jobs:
         with:
           working-directory: examples/basic
           install-command: 'npm install chalk'
-          cache-key-prefix: chalk5
+          cache-key-prefix: chalk6
         env:
           ACTIONS_RUNNER_DEBUG: true
           ACTIONS_STEP_DEBUG: true
