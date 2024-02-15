@@ -11,7 +11,7 @@ jobs:
         with:
           working-directory: examples/basic
           install-command: 'npm install chalk'
-          cache-key-prefix: chalk2
+          cache-key-prefix: chalk3
         env:
           ACTIONS_STEP_DEBUG: true
 
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
-      - name: install chalk
+      - name: Caching
         uses: actions/cache@v3
         with:
           path: ~/.npm
