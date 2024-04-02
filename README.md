@@ -176,7 +176,7 @@ If you need to use a specific Node version, use the [actions/setup-node](https:/
   # https://github.com/actions/setup-node
   - uses: actions/setup-node@v4
     with:
-      node-version: 18
+      node-version: 20
   - uses: bahmutov/npm-install@v1
 ```
 
