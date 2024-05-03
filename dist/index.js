@@ -110,6 +110,7 @@ const install = (opts = {}) => {
   }
 
   const shouldUseYarn = opts.useYarn
+  const shouldUseYarnV1 = opts.useYarnV1 ?? true
   const shouldUsePackageLock = opts.usePackageLock
   const npmCacheFolder = opts.npmCacheFolder
   if (!npmCacheFolder) {
@@ -134,7 +135,9 @@ const install = (opts = {}) => {
     return io.which('yarn', true).then(yarnPath => {
       console.log('yarn at "%s"', yarnPath)
 
-      const args = shouldUsePackageLock ? ['--frozen-lockfile'] : []
+      const args = shouldUsePackageLock
+        ? [shouldUseYarnV1 ? '--frozen-lockfile' : '--immutable']
+        : []
       core.debug(
         `yarn command: "${yarnPath}" ${args} ${JSON.stringify(options)}`
       )
@@ -232,7 +235,7 @@ const getCacheParams = ({
   return { primaryKey: primaryKeySegments.join('-'), inputPaths, restoreKeys }
 }
 
-const installInOneFolder = ({
+const installInOneFolder = async ({
   usePackageLock,
   workingDirectory,
   useRollingCache,
@@ -259,6 +262,13 @@ const installInOneFolder = ({
     core.debug('using NPM command, not using Yarn cache paths')
     useYarn = false
   }
+  let useYarnV1 = true
+  if (useYarn) {
+    const { stdout: yarnVersion } = await exec.getExecOutput('yarn', [
+      '--version'
+    ])
+    useYarnV1 = /^1/.test(yarnVersion)
+  }
 
   // enforce the same NPM cache folder across different operating systems
   const homeDirectory = os.homedir()
@@ -275,6 +285,7 @@ const installInOneFolder = ({
 
   const opts = {
     useYarn,
+    useYarnV1,
     usePackageLock,
     workingDirectory,
     npmCacheFolder: NPM_CACHE_FOLDER,

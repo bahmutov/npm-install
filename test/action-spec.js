@@ -55,6 +55,11 @@ describe('action', () => {
         .withArgs(yarnFilename)
         .returns('hash-from-yarn-lock-file')
 
+      sandbox
+        .stub(exec, 'getExecOutput')
+        .withArgs('yarn', ['--version'])
+        .resolves({ stdout: '1.22.19' })
+
       const cacheHit = false
       this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
       this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
@@ -316,6 +321,11 @@ describe('action', () => {
         .withArgs(yarnFilename)
         .returns('hash-from-yarn-lock-file')
 
+      sandbox
+        .stub(exec, 'getExecOutput')
+        .withArgs('yarn', ['--version'])
+        .resolves({ stdout: '1.22.19' })
+
       const cacheHit = false
       this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
       this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
@@ -448,6 +458,11 @@ describe('action', () => {
         .stub(hasha, 'fromFileSync')
         .withArgs(yarnFilename)
         .returns('hash-from-yarn-lock-file')
+
+      sandbox
+        .stub(exec, 'getExecOutput')
+        .withArgs('yarn', ['--version'])
+        .resolves({ stdout: '1.22.19' })
 
       const cacheHit = false
       this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
