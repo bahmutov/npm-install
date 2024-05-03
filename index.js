@@ -185,6 +185,7 @@ const getLockFilename = usePackageLock => workingDirectory => {
 
 const getCacheParams = ({
   useYarn,
+  useYarnV1,
   useRollingCache,
   homeDirectory,
   npmCacheFolder,
@@ -202,7 +203,9 @@ const getCacheParams = ({
   let inputPaths, restoreKeys
 
   if (useYarn) {
-    inputPaths = [path.join(homeDirectory, '.cache', 'yarn')]
+    inputPaths = useYarnV1
+      ? [path.join(homeDirectory, '.cache', 'yarn')]
+      : [path.join(homeDirectory, '.yarn', 'berry', 'cache')]
     primaryKeySegments.unshift('yarn')
   } else {
     inputPaths = [npmCacheFolder]
@@ -269,6 +272,7 @@ const installInOneFolder = async ({
 
   const NPM_CACHE = getCacheParams({
     useYarn,
+    useYarnV1,
     homeDirectory,
     useRollingCache,
     npmCacheFolder: NPM_CACHE_FOLDER,
