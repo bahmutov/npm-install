@@ -331,6 +331,8 @@ const npmInstallAction = async () => {
     // From: https://github.com/actions/cache/blob/a2ed59d39b352305bdd2f628719a53b2cc4f9613/src/saveImpl.ts#L96
     if (process.env.NODE_ENV !== 'test') {
       process.exit(0)
+    } else {
+      core.debug('skip process.exit(0) in test mode')
     }
   } catch (err) {
     console.error(err)
