@@ -6,7 +6,7 @@
   "scripts": {
     "format": "prettier --write './**/*'",
     "format:check": "prettier --check './**/*'",
-    "test": "npm run unit",
+    "test": "NODE_ENV=test npm run unit",
     "unit": "mocha test/helper 'test/*spec.js'",
     "pretest": "npm run build",
     "build": "ncc build -o dist index.js",
