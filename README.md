@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and test
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: bahmutov/npm-install@v1
       - run: npm t
 ```
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and test
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: bahmutov/npm-install@v1
         with:
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and test
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: bahmutov/npm-install@v1
         with:
           working-directory: |
@@ -171,7 +171,7 @@ The first cache will have key `npm-tool-a-...` and the second cache will have ke
 If you need to use a specific Node version, use the [actions/setup-node](https://github.com/actions/setup-node) before installing the dependencies.
 
 ```yml
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
   # pick the Node version to use and install it
   # https://github.com/actions/setup-node
   - uses: actions/setup-node@v3
