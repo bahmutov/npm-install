@@ -1,3 +1,6 @@
+// https://github.com/bahmutov/npm-install/pull/228
+process.env.NODE_ENV = 'test'
+
 // following guide
 // https://glebbahmutov.com/blog/mocha-and-sinon/
 const chai = require('chai')

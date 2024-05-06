@@ -4,7 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # pick the Node version to use and install it
       # https://github.com/actions/setup-node
       - uses: actions/setup-node@v3

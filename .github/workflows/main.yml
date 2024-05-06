@@ -10,11 +10,11 @@ jobs:
     name: Build and test on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # caching NPM dependencies
       # https://github.com/actions/cache/blob/master/examples.md#node---npm
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
