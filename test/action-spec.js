@@ -55,6 +55,11 @@ describe('action', () => {
         .withArgs(yarnFilename)
         .returns('hash-from-yarn-lock-file')
 
+      sandbox
+        .stub(exec, 'getExecOutput')
+        .withArgs('yarn', ['--version'])
+        .resolves({ stdout: '1.22.19' })
+
       const cacheHit = false
       this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
       this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
@@ -71,6 +76,63 @@ describe('action', () => {
       expect(this.exec).to.be.calledOnceWithExactly(
         quote(pathToYarn),
         ['--frozen-lockfile'],
+        { cwd }
+      )
+      expect(this.saveCache).to.be.calledOnceWithExactly(
+        yarnCachePaths,
+        cacheKey
+      )
+    })
+  })
+
+  context('finds Yarn berry', function() {
+    const pathToYarn = '/path/to/yarn'
+    const yarnFilename = path.join(cwd, 'yarn.lock')
+    const yarnCachePaths = [path.join(homedir, '.yarn', 'berry', 'cache')]
+    const cacheKey = 'yarn-platform-arch-hash-from-yarn-lock-file'
+
+    beforeEach(function() {
+      sandbox
+        .stub(core, 'getInput')
+        .withArgs('useLockFile')
+        .returns()
+
+      sandbox
+        .stub(fs, 'existsSync')
+        .withArgs(yarnFilename)
+        .returns(true)
+
+      sandbox
+        .stub(io, 'which')
+        .withArgs('yarn')
+        .resolves(pathToYarn)
+
+      sandbox
+        .stub(hasha, 'fromFileSync')
+        .withArgs(yarnFilename)
+        .returns('hash-from-yarn-lock-file')
+
+      sandbox
+        .stub(exec, 'getExecOutput')
+        .withArgs('yarn', ['--version'])
+        .resolves({ stdout: '4.2.1' })
+
+      const cacheHit = false
+      this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
+      this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
+    })
+
+    it('and uses lock file', async function() {
+      await action.npmInstallAction()
+
+      expect(this.restoreCache).to.be.calledOnceWithExactly(
+        yarnCachePaths,
+        cacheKey,
+        [cacheKey]
+      )
+      expect(this.exec).to.be.calledOnceWithExactly(
+        quote(pathToYarn),
+        ['--immutable'],
         { cwd }
       )
       expect(this.saveCache).to.be.calledOnceWithExactly(
@@ -316,6 +378,11 @@ describe('action', () => {
         .withArgs(yarnFilename)
         .returns('hash-from-yarn-lock-file')
 
+      sandbox
+        .stub(exec, 'getExecOutput')
+        .withArgs('yarn', ['--version'])
+        .resolves({ stdout: '1.22.19' })
+
       const cacheHit = false
       this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
       this.saveCache = sandbox.stub(cache, 'saveCache').resolves()
@@ -448,6 +515,11 @@ describe('action', () => {
         .stub(hasha, 'fromFileSync')
         .withArgs(yarnFilename)
         .returns('hash-from-yarn-lock-file')
+
+      sandbox
+        .stub(exec, 'getExecOutput')
+        .withArgs('yarn', ['--version'])
+        .resolves({ stdout: '1.22.19' })
 
       const cacheHit = false
       this.restoreCache = sandbox.stub(cache, 'restoreCache').resolves(cacheHit)
