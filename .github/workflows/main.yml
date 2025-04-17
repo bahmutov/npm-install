@@ -6,7 +6,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-latest, macOS-latest]
+        os: [ubuntu-22.04, windows-latest, macOS-latest]
     name: Build and test on ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -26,13 +26,13 @@ jobs:
 
       # only makes sense to check code format on 1 OS
       - name: Linting 🧹
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: npm run format:check
 
       - run: npm test
 
   release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     name: release
     needs: build-and-test
     # only release from the master branch
