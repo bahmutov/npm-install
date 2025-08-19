@@ -174,9 +174,9 @@ If you need to use a specific Node version, use the [actions/setup-node](https:/
 - uses: actions/checkout@v4
   # pick the Node version to use and install it
   # https://github.com/actions/setup-node
-  - uses: actions/setup-node@v3
+  - uses: actions/setup-node@v4
     with:
-      node-version: 18
+      node-version: 20
   - uses: bahmutov/npm-install@v1
 ```
 
