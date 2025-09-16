@@ -21,6 +21,7 @@ describe('install command', () => {
     it('uses absolute working directory', async function() {
       const opts = {
         useYarn: true,
+        useYarnV1: true,
         usePackageLock: true,
         // only use relative path
         workingDirectory: 'directory',
@@ -54,6 +55,7 @@ describe('install command', () => {
     it('and lock file', async function() {
       const opts = {
         useYarn: true,
+        useYarnV1: true,
         usePackageLock: true,
         workingDirectory,
         npmCacheFolder
@@ -73,6 +75,7 @@ describe('install command', () => {
     it('without lock file', async function() {
       const opts = {
         useYarn: true,
+        useYarnV1: true,
         usePackageLock: false,
         workingDirectory,
         npmCacheFolder
@@ -88,6 +91,26 @@ describe('install command', () => {
         { cwd: workingDirectory }
       )
     })
+
+    it('uses Yarn berry', async function() {
+      const opts = {
+        useYarn: true,
+        useYarnV1: false,
+        usePackageLock: true,
+        workingDirectory,
+        npmCacheFolder
+      }
+      sandbox
+        .stub(io, 'which')
+        .withArgs('yarn')
+        .resolves(pathToYarn)
+      await action.utils.install(opts)
+      expect(this.exec).to.have.been.calledOnceWithExactly(
+        quote(pathToYarn),
+        ['--immutable'],
+        { cwd: workingDirectory }
+      )
+    })
   })
 
   context('using NPM', () => {
@@ -100,6 +123,7 @@ describe('install command', () => {
     it('uses absolute working directory', async function() {
       const opts = {
         useYarn: false,
+        useYarnV1: false,
         usePackageLock: true,
         // only use relative path
         workingDirectory: 'directory',
@@ -127,6 +151,7 @@ describe('install command', () => {
     it('installs using lock file', async function() {
       const opts = {
         useYarn: false,
+        useYarnV1: false,
         usePackageLock: true,
         workingDirectory,
         npmCacheFolder
@@ -151,6 +176,7 @@ describe('install command', () => {
     it('installs without a lock file', async function() {
       const opts = {
         useYarn: false,
+        useYarnV1: false,
         usePackageLock: false,
         workingDirectory,
         npmCacheFolder
@@ -177,6 +203,7 @@ describe('install command', () => {
     it('calls exec directly', async function() {
       const opts = {
         useYarn: true,
+        useYarnV1: false,
         usePackageLock: true,
         // only use relative path
         workingDirectory: 'directory',
