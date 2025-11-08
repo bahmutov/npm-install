@@ -35,7 +35,7 @@
     "@actions/exec": "1.1.1",
     "@actions/io": "2.0.0",
     "@bahmutov/print-env": "2.1.2",
-    "hasha": "5.2.2",
+    "hasha": "7.0.0",
     "quote": "0.4.0"
   },
   "devDependencies": {
