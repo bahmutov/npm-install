@@ -31,7 +31,7 @@
   "homepage": "https://github.com/bahmutov/npm-install#readme",
   "dependencies": {
     "@actions/cache": "4.1.0",
-    "@actions/core": "2.0.0",
+    "@actions/core": "2.0.1",
     "@actions/exec": "2.0.0",
     "@actions/io": "2.0.0",
     "@bahmutov/print-env": "2.1.2",
