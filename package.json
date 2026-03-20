@@ -32,7 +32,7 @@
   "dependencies": {
     "@actions/cache": "5.0.5",
     "@actions/core": "2.0.3",
-    "@actions/exec": "2.0.0",
+    "@actions/exec": "3.0.0",
     "@actions/io": "2.0.0",
     "@bahmutov/print-env": "2.1.2",
     "hasha": "5.2.2",
