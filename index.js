@@ -27,6 +27,28 @@ const getInputBool = (name, defaultValue = false) => {
   return defaultValue
 }
 
+/**
+ * Grabs an integer GitHub Action parameter input and casts it.
+ * @param {string} name - parameter name
+ * @param {number} defaultValue - default value to use if the parameter was not specified
+ * @returns {number} converted input argument or default value
+ */
+const getInputInt = (name, defaultValue = 0) => {
+  const param = core.getInput(name)
+  if (param === '' || typeof param === 'undefined') {
+    return defaultValue
+  }
+
+  const value = Number(param)
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(
+      `Input "${name}" must be a non-negative integer, received "${param}"`
+    )
+  }
+
+  return value
+}
+
 const restoreCachedNpm = npmCache => {
   console.log('trying to restore cached NPM modules')
   console.log('cache key %s', npmCache.primaryKey)
@@ -85,6 +107,49 @@ const saveCachedNpm = npmCache => {
 
 const hasOption = (name, o) => name in o
 
+// Short pause so a blip at the registry can clear before the next attempt.
+const INSTALL_RETRY_DELAY_MS = 5000
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+/**
+ * Runs an install command, then retries it after a short delay on failure.
+ * @param {() => Promise<unknown>} run - install command to attempt
+ * @param {number} retries - extra attempts after the first failure (0 runs once)
+ */
+const execWithRetries = async (run, retries) => {
+  const attempts = retries + 1
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    if (retries > 0) {
+      console.log('install attempt %d of %d', attempt, attempts)
+    }
+    try {
+      return await run()
+    } catch (error) {
+      const reason = error && error.message ? error.message : error
+      if (attempt === attempts) {
+        if (retries > 0) {
+          console.log(
+            'install attempt %d of %d failed: %s',
+            attempt,
+            attempts,
+            reason
+          )
+        }
+        throw error
+      }
+      console.log(
+        'install attempt %d of %d failed: %s; retrying in %ds',
+        attempt,
+        attempts,
+        reason,
+        INSTALL_RETRY_DELAY_MS / 1000
+      )
+      await api.utils.sleep(INSTALL_RETRY_DELAY_MS)
+    }
+  }
+}
+
 const install = (opts = {}) => {
   // Note: need to quote found tool to avoid Windows choking on
   // npm paths with spaces like "C:\Program Files\nodejs\npm.cmd ci"
@@ -118,25 +183,34 @@ const install = (opts = {}) => {
     cwd: path.resolve(opts.workingDirectory)
   }
 
-  if (opts.installCommand) {
-    core.debug(`installing using custom command "${opts.installCommand}"`)
-    return exec.exec(opts.installCommand, [], options)
+  const retries = opts.retries ?? 0
+  if (!Number.isInteger(retries) || retries < 0) {
+    throw new Error(
+      `retries must be a non-negative integer, received ${retries}`
+    )
   }
 
-  if (shouldUseYarn) {
-    console.log('installing NPM dependencies using Yarn')
-    return io.which('yarn', true).then(yarnPath => {
-      console.log('yarn at "%s"', yarnPath)
+  const runInstall = () => {
+    if (opts.installCommand) {
+      core.debug(`installing using custom command "${opts.installCommand}"`)
+      return exec.exec(opts.installCommand, [], options)
+    }
 
-      const args = shouldUsePackageLock
-        ? [shouldUseYarnV1 ? '--frozen-lockfile' : '--immutable']
-        : []
-      core.debug(
-        `yarn command: "${yarnPath}" ${args} ${JSON.stringify(options)}`
-      )
-      return exec.exec(quote(yarnPath), args, options)
-    })
-  } else {
+    if (shouldUseYarn) {
+      console.log('installing NPM dependencies using Yarn')
+      return io.which('yarn', true).then(yarnPath => {
+        console.log('yarn at "%s"', yarnPath)
+
+        const args = shouldUsePackageLock
+          ? [shouldUseYarnV1 ? '--frozen-lockfile' : '--immutable']
+          : []
+        core.debug(
+          `yarn command: "${yarnPath}" ${args} ${JSON.stringify(options)}`
+        )
+        return exec.exec(quote(yarnPath), args, options)
+      })
+    }
+
     console.log('installing NPM dependencies')
 
     return io.which('npm', true).then(npmPath => {
@@ -147,6 +221,8 @@ const install = (opts = {}) => {
       return exec.exec(quote(npmPath), args, options)
     })
   }
+
+  return execWithRetries(runInstall, retries)
 }
 
 const getPlatformAndArch = () => `${process.platform}-${process.arch}`
@@ -236,7 +312,8 @@ const installInOneFolder = async ({
   workingDirectory,
   useRollingCache,
   installCommand,
-  cachePrefix
+  cachePrefix,
+  retries
 }) => {
   core.debug(`usePackageLock? ${usePackageLock}`)
   core.debug(`working directory ${workingDirectory}`)
@@ -286,7 +363,8 @@ const installInOneFolder = async ({
     usePackageLock,
     workingDirectory,
     npmCacheFolder: NPM_CACHE_FOLDER,
-    installCommand
+    installCommand,
+    retries
   }
 
   return api.utils.restoreCachedNpm(NPM_CACHE).then(npmCacheHit => {
@@ -304,9 +382,11 @@ const npmInstallAction = async () => {
   const usePackageLock = getInputBool('useLockFile', true)
   const useRollingCache = getInputBool('useRollingCache', false)
   const cachePrefix = core.getInput('cache-key-prefix') || ''
+  const retries = getInputInt('retries', 0)
   core.debug(`usePackageLock? ${usePackageLock}`)
   core.debug(`useRollingCache? ${useRollingCache}`)
   core.debug(`cache prefix "${cachePrefix}"`)
+  core.debug(`retries ${retries}`)
 
   // Note: working directory for "actions/exec" should be absolute
 
@@ -329,7 +409,8 @@ const npmInstallAction = async () => {
         useRollingCache,
         workingDirectory,
         installCommand,
-        cachePrefix
+        cachePrefix,
+        retries
       })
 
       const finished = +new Date()
@@ -368,7 +449,8 @@ const api = {
     saveCachedNpm,
     getPlatformAndArch,
     getNow,
-    installInOneFolder
+    installInOneFolder,
+    sleep
   }
 }
 

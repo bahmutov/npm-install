@@ -332,6 +332,7 @@ describe('action', () => {
       expect(installInOneFolder).to.be.calledWithExactly({
         cachePrefix: '',
         installCommand: undefined,
+        retries: 0,
         usePackageLock: true,
         useRollingCache: false,
         workingDirectory: 'subfolder/foo'
@@ -339,6 +340,7 @@ describe('action', () => {
       expect(installInOneFolder).to.be.calledWithExactly({
         cachePrefix: '',
         installCommand: undefined,
+        retries: 0,
         usePackageLock: true,
         useRollingCache: false,
         workingDirectory: 'subfolder/bar'
@@ -346,6 +348,7 @@ describe('action', () => {
       expect(installInOneFolder).to.be.calledWithExactly({
         cachePrefix: '',
         installCommand: undefined,
+        retries: 0,
         usePackageLock: true,
         useRollingCache: false,
         workingDirectory: 'subfolder/baz'
@@ -486,6 +489,43 @@ describe('action', () => {
           cwd
         }
       )
+    })
+  })
+
+  context('retries input', function() {
+    it('passes retries through to each install', async function() {
+      const stub = sandbox.stub(core, 'getInput')
+      stub.withArgs('retries').returns('2')
+      stub.withArgs('working-directory').returns('app')
+
+      const installInOneFolder = sandbox
+        .stub(utils, 'installInOneFolder')
+        .resolves()
+      await action.npmInstallAction()
+      expect(installInOneFolder).to.have.been.calledOnceWithExactly({
+        cachePrefix: '',
+        installCommand: undefined,
+        retries: 2,
+        usePackageLock: true,
+        useRollingCache: false,
+        workingDirectory: 'app'
+      })
+    })
+
+    it('rejects a retries value that is not a non-negative integer', async function() {
+      sandbox
+        .stub(core, 'getInput')
+        .withArgs('retries')
+        .returns('lots')
+
+      try {
+        await action.npmInstallAction()
+        expect.fail('should have thrown')
+      } catch (error) {
+        expect(error.message).to.equal(
+          'Input "retries" must be a non-negative integer, received "lots"'
+        )
+      }
     })
   })
 

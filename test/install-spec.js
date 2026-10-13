@@ -232,4 +232,148 @@ describe('install command', () => {
       ).to.have.been.calledOnceWithExactly('npm_config_cache', npmCacheFolder)
     })
   })
+
+  context('retries', () => {
+    const pathToNpm = '/path/to/npm'
+    const npmOpts = {
+      useYarn: false,
+      useYarnV1: false,
+      usePackageLock: true,
+      workingDirectory,
+      npmCacheFolder
+    }
+
+    beforeEach(function() {
+      sandbox.stub(core, 'exportVariable')
+      sandbox
+        .stub(io, 'which')
+        .withArgs('npm')
+        .resolves(pathToNpm)
+      this.sleep = sandbox.stub(action.utils, 'sleep').resolves()
+      this.log = sandbox.spy(console, 'log')
+    })
+
+    it('runs once when retries is omitted', async function() {
+      const error = new Error('network down')
+      this.exec.rejects(error)
+
+      try {
+        await action.utils.install(npmOpts)
+        expect.fail('should have thrown')
+      } catch (err) {
+        expect(err).to.equal(error)
+      }
+
+      expect(this.exec).to.have.been.calledOnce
+      expect(this.sleep).to.not.have.been.called
+      expect(this.log).to.not.have.been.calledWith(
+        'install attempt %d of %d',
+        1,
+        1
+      )
+    })
+
+    it('retries the npm install command until it succeeds', async function() {
+      this.exec.onCall(0).rejects(new Error('registry timeout'))
+      this.exec.onCall(1).resolves(0)
+
+      await action.utils.install({ ...npmOpts, retries: 2 })
+
+      expect(this.exec).to.have.been.calledTwice
+      expect(this.exec).to.have.been.calledWithExactly(
+        quote(pathToNpm),
+        ['ci'],
+        { cwd: workingDirectory }
+      )
+      expect(this.sleep).to.have.been.calledOnceWithExactly(5000)
+      expect(this.log).to.have.been.calledWith('install attempt %d of %d', 1, 3)
+      expect(this.log).to.have.been.calledWith(
+        'install attempt %d of %d failed: %s; retrying in %ds',
+        1,
+        3,
+        'registry timeout',
+        5
+      )
+      expect(this.log).to.have.been.calledWith('install attempt %d of %d', 2, 3)
+      expect(core.exportVariable).to.have.been.calledOnce
+    })
+
+    it('fails after the configured retries are exhausted', async function() {
+      const error = new Error('network down')
+      this.exec.rejects(error)
+
+      try {
+        await action.utils.install({ ...npmOpts, retries: 2 })
+        expect.fail('should have thrown')
+      } catch (err) {
+        expect(err).to.equal(error)
+      }
+
+      expect(this.exec).to.have.been.calledThrice
+      expect(this.sleep).to.have.been.calledTwice
+      expect(this.sleep).to.have.been.calledWithExactly(5000)
+      expect(this.log).to.have.been.calledWith(
+        'install attempt %d of %d failed: %s',
+        3,
+        3,
+        'network down'
+      )
+    })
+
+    it('retries Yarn installs', async function() {
+      const pathToYarn = '/path/to/yarn'
+      io.which.withArgs('yarn').resolves(pathToYarn)
+      this.exec.onCall(0).rejects(new Error('yarn registry blip'))
+      this.exec.onCall(1).resolves(0)
+
+      await action.utils.install({
+        useYarn: true,
+        useYarnV1: true,
+        usePackageLock: true,
+        workingDirectory,
+        npmCacheFolder,
+        retries: 1
+      })
+
+      expect(this.exec).to.have.been.calledTwice
+      expect(this.exec).to.have.been.calledWithExactly(
+        quote(pathToYarn),
+        ['--frozen-lockfile'],
+        { cwd: workingDirectory }
+      )
+      expect(this.sleep).to.have.been.calledOnceWithExactly(5000)
+    })
+
+    it('retries a custom install command', async function() {
+      const installCommand = 'pnpm install --frozen-lockfile'
+      this.exec.onCall(0).rejects(new Error('pnpm registry blip'))
+      this.exec.onCall(1).resolves(0)
+
+      await action.utils.install({
+        ...npmOpts,
+        installCommand,
+        retries: 1
+      })
+
+      expect(this.exec).to.have.been.calledTwice
+      expect(this.exec).to.have.been.calledWithExactly(installCommand, [], {
+        cwd: workingDirectory
+      })
+      expect(this.sleep).to.have.been.calledOnceWithExactly(5000)
+      expect(io.which).to.not.have.been.called
+    })
+
+    it('rejects a negative retries option', async function() {
+      try {
+        await action.utils.install({ ...npmOpts, retries: -1 })
+        expect.fail('should have thrown')
+      } catch (err) {
+        expect(err.message).to.equal(
+          'retries must be a non-negative integer, received -1'
+        )
+      }
+
+      expect(this.exec).to.not.have.been.called
+    })
+  })
 })

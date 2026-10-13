@@ -142,6 +142,18 @@ You can use your own install command
 
 See [example-install-command.yml](./.github/workflows/example-install-command.yml)
 
+### Retry flaky installs
+
+Registry and network errors can fail an install that would succeed on another try. Set `retries` to how many extra times to run the install command after a failure. The default is `0`, so the install runs once. Each failed attempt waits 5 seconds before the next one, and every attempt is logged. Retries wrap the command this action actually runs: `npm ci`, `npm install`, Yarn, or a custom `install-command` such as pnpm.
+
+```yml
+- uses: bahmutov/npm-install@v1
+  with:
+    retries: 2
+```
+
+`retries: 2` runs the install up to 3 times (the first attempt plus two retries).
+
 ### Add cache prefix
 
 If you are installing different individual tools, you might want to have different caches. You can insert custom cache prefix strings into the cache keys. For example, let's install two different tools, each cache will be separate.

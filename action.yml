@@ -24,3 +24,7 @@ inputs:
   cache-key-prefix:
     description: 'Prefix the cache name with this string'
     required: false
+  retries:
+    description: 'Number of times to retry the install command after a failure. Defaults to 0 (run once). Applies to npm ci, npm install, Yarn, and install-command.'
+    required: false
+    default: '0'
